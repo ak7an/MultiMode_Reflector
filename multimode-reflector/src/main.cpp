@@ -5,6 +5,7 @@
 #include "net/epoll_server.h"
 #include "system/timer.h"
 #include "util/config.h"
+#include "protocol/dstar_session.h"
 
 int main() {
 
@@ -20,6 +21,7 @@ int main() {
     Timer timer;
     timer.start([&]() {
         server.tick();
+        DStarSessionManager::cleanup();
     });
 
     while (true) {

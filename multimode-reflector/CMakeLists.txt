@@ -10,7 +10,13 @@ add_executable(reflector
     src/core/logger.cpp
     src/core/session.cpp
     src/core/router.cpp
+    src/core/peer_manager.cpp
     src/net/epoll_server.cpp
+    src/net/epoll_server.cpp 
+    src/protocol/protocol_detector.cpp
+    src/protocol/dstar_protocol.cpp
+    src/protocol/dstar_header.cpp
+    src/protocol/dstar_session.cpp
     src/util/config.cpp
     src/system/timer.cpp
 )
