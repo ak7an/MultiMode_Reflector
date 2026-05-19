@@ -1,0 +1,12 @@
+[Unit]
+Description=Multimode Reflector
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/reflector
+Restart=always
+RestartSec=2
+Nice=-10
+
+[Install]
+WantedBy=multi-user.target
