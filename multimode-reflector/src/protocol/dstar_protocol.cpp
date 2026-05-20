@@ -1,6 +1,7 @@
 #include "dstar_protocol.h"
 #include "dstar_header.h"
 #include "dstar_session.h"
+#include "../core/lastheard_manager.h"
 
 #include "../core/logger.h"
 
@@ -47,7 +48,12 @@ if (hdr.valid) {
         hdr.mycall,
         hdr.urcall,
         hdr.rpt1,
-        hdr.rpt2);
+        hdr.rpt2);       
+      
+      LastHeardManager::addEntry(
+        hdr.mycall,
+        peer,
+        hdr.streamId);
 
     Logger::log(INFO,
         "D-Star Header:"
@@ -57,6 +63,8 @@ if (hdr.valid) {
         " RPT2=" + hdr.rpt2 +
         " STREAMID=" +
         std::to_string(hdr.streamId));
+
+     LastHeardManager::dump();
 }
 else {
 

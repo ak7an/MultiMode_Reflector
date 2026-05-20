@@ -17,6 +17,7 @@ add_executable(reflector
     src/protocol/dstar_protocol.cpp
     src/protocol/dstar_header.cpp
     src/protocol/dstar_session.cpp
+    src/core/lastheard_manager.cpp 
     src/util/config.cpp
     src/system/timer.cpp
 )

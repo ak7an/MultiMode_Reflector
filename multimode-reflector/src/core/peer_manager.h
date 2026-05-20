@@ -18,6 +18,7 @@ struct Peer {
 class PeerManager {
 public:
 
+    static void cleanupInactivePeers();
     static void registerPeer(
         const std::string& id,
         const sockaddr_in& addr);

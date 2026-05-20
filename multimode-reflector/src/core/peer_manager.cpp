@@ -13,6 +13,7 @@ PeerManager::m_peers;
 void PeerManager::registerPeer(
     const std::string& id,
     const sockaddr_in& addr)
+
 {
     bool isNew =
         !m_peers.count(id);
@@ -34,29 +35,37 @@ void PeerManager::registerPeer(
 void PeerManager::updateActivity(
     const std::string& id)
 {
-    if (m_peers.count(id)) {
+    auto it = m_peers.find(id);
 
-        m_peers[id].lastActivity =
+    if (it != m_peers.end()) {
+
+        it->second.lastActivity =
             time(nullptr);
     }
 }
 
-void PeerManager::cleanup()
+void PeerManager::cleanupInactivePeers()
 {
     time_t now = time(nullptr);
 
     for (auto it = m_peers.begin();
-         it != m_peers.end();)
-    {
-        if ((now - it->second.lastActivity) > 60) {
+         it != m_peers.end(); ) {
+
+        double age =
+            difftime(
+                now,
+                it->second.lastActivity);
+
+        if (age > 60) {
 
             Logger::log(INFO,
-                "Peer timeout: " +
+                "Removing inactive peer: " +
                 it->first);
 
             it = m_peers.erase(it);
         }
         else {
+
             ++it;
         }
     }
