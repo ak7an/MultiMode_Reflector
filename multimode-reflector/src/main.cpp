@@ -1,6 +1,6 @@
 #include <iostream>
 #include <unistd.h>
-#include "core/config_manager.h"
+#include <memory>
 
 #include "core/logger.h"
 #include "net/epoll_server.h"
@@ -21,7 +21,7 @@ int main() {
     Logger::log(INFO, "Reflector starting...");
 
     EpollServer server;
-    server.init(cfg.getInt("port"));
+    server.init(cfg.getInt("port", 9000));
 
    ProtocolManager::registerProtocol(
     ProtocolType::DSTAR,
