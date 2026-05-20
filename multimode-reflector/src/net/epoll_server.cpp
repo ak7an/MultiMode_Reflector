@@ -3,6 +3,9 @@
 #include "../protocol/dstar_protocol.h"
 #include "../core/peer_manager.h"
 #include "../core/logger.h"
+#include "../core/config_manager.h"
+#include "../protocol/protocol_manager.h"
+#include "../protocol/protocol_interface.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -95,6 +98,8 @@ void EpollServer::tick() {
             handlePacket();
         }
     }
+
+    PeerManager::cleanupInactivePeers();
 }
 
 void EpollServer::handlePacket() {
@@ -188,26 +193,23 @@ Logger::log(INFO,
     " size=" +
     std::to_string(received));
 
-switch (proto) {
+ProtocolInterface* handler =
+    ProtocolManager::get(proto);
 
-    case ProtocolType::DSTAR:
+if (handler) {
 
-        DStarProtocol::handle(
-            reinterpret_cast<uint8_t*>(buffer),
-            received,
-            key);
+    handler->handle(
+        reinterpret_cast<uint8_t*>(buffer),
+        received,
+        key);
 
-        PeerManager::broadcastFrame(
-            m_socket,
-            reinterpret_cast<uint8_t*>(buffer),
-            received,
-            key);
-
-        break;
-
-    default:
-        break;
+    PeerManager::broadcastFrame(
+        m_socket,
+        reinterpret_cast<uint8_t*>(buffer),
+        received,
+        key);
 }
+
 
 }
 

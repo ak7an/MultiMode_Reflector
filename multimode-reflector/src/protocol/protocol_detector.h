@@ -2,17 +2,7 @@
 
 #include <cstdint>
 #include <cstddef>
-
-enum class ProtocolType {
-    UNKNOWN,
-    DSTAR,
-    DMR,
-    YSF,
-    NXDN,
-    P25,
-    M17,
-    XLX
-};
+#include "protocol_definitions.h"
 
 class ProtocolDetector {
 public:

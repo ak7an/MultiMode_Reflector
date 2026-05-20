@@ -2,6 +2,7 @@
 #include "dstar_header.h"
 #include "dstar_session.h"
 #include "../core/lastheard_manager.h"
+#include "../core/loop_guard.h"
 
 #include "../core/logger.h"
 
@@ -77,6 +78,17 @@ else {
         uint16_t streamId =
             (data[12] << 8) |
              data[13];
+  
+     if (LoopGuard::seenRecently(
+        streamId,
+        peer))
+{
+    Logger::log(INFO,
+        "Loop suppressed for stream " +
+        std::to_string(streamId));
+
+    return;
+}
 
         Logger::log(INFO,
             "D-Star Voice Frame:"

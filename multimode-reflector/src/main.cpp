@@ -1,22 +1,32 @@
 #include <iostream>
 #include <unistd.h>
+#include "core/config_manager.h"
 
 #include "core/logger.h"
 #include "net/epoll_server.h"
 #include "system/timer.h"
 #include "util/config.h"
 #include "protocol/dstar_session.h"
+#include "protocol/protocol_manager.h"
+#include "protocol/dstar_protocol.h"
+
 
 int main() {
 
     Config cfg;
-    cfg.load("config/reflector.ini");
+    cfg.load("reflector.ini");
 
     Logger::init("reflector.log");
+
     Logger::log(INFO, "Reflector starting...");
 
     EpollServer server;
     server.init(cfg.getInt("port"));
+
+   ProtocolManager::registerProtocol(
+    ProtocolType::DSTAR,
+    std::make_shared<
+        DStarProtocol>());
 
     Timer timer;
     timer.start([&]() {

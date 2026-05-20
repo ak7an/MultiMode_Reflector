@@ -1,11 +1,18 @@
 #pragma once
 
+#include "protocol_interface.h"
+
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
-class DStarProtocol {
+class DStarProtocol :
+    public ProtocolInterface
+{
 public:
-    static void handle(const uint8_t* data,
-                       size_t length,
-                       const std::string& peer);
+
+    void handle(
+        const uint8_t* data,
+        size_t length,
+        const std::string& peer) override;
 };
