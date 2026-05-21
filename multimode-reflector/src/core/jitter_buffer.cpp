@@ -69,6 +69,8 @@ bool JitterBuffer::processQueue(
     JitterStats& s,
     uint8_t sequence)
 {
+    bool releasedRequestedFrame = false;
+
     if (!s.hasSequence) {
 
         s.expectedSequence =
@@ -77,9 +79,37 @@ bool JitterBuffer::processQueue(
         s.hasSequence = true;
     }
 
-    if (!s.pending.count(
-            s.expectedSequence))
+    while (s.pending.count(
+        s.expectedSequence))
     {
+        uint8_t releasedSeq =
+            s.expectedSequence;
+
+        Logger::log(INFO,
+            "JitterBuffer release:"
+            " STREAMID=" +
+            std::to_string(s.streamId) +
+            " SEQ=" +
+            std::to_string(releasedSeq));
+
+        if (releasedSeq ==
+            (sequence & 0x1F))
+        {
+            releasedRequestedFrame = true;
+        }
+
+        s.lastSequence =
+            releasedSeq;
+
+        s.pending.erase(
+            releasedSeq);
+
+        s.expectedSequence =
+            (s.expectedSequence + 1) % 21;
+    }
+
+    if (!releasedRequestedFrame) {
+
         Logger::log(INFO,
             "JitterBuffer holding:"
             " STREAMID=" +
@@ -88,29 +118,11 @@ bool JitterBuffer::processQueue(
             std::to_string(s.expectedSequence) +
             " PENDING=" +
             std::to_string(s.pending.size()));
-
-        return false;
     }
 
-    Logger::log(INFO,
-        "JitterBuffer release:"
-        " STREAMID=" +
-        std::to_string(s.streamId) +
-        " SEQ=" +
-        std::to_string(
-            s.expectedSequence));
-
-    s.lastSequence =
-        s.expectedSequence;
-
-    s.pending.erase(
-        s.expectedSequence);
-
-    s.expectedSequence =
-        (s.expectedSequence + 1) % 21;
-
-    return true;
+    return releasedRequestedFrame;
 }
+
 
 void JitterBuffer::dump()
 {
