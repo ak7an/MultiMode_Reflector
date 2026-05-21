@@ -77,7 +77,6 @@ void DStarSessionManager::touchStream(
         time(nullptr);
 }
 
-
 bool DStarSessionManager::acceptSequence(
     uint16_t streamId,
     uint8_t sequence)
@@ -91,10 +90,6 @@ bool DStarSessionManager::acceptSequence(
     uint8_t cleanSeq =
         sequence & 0x1F;
 
-    /*
-     * First sequence
-     */
-
     if (!s.hasSequence) {
 
         s.lastSequence = cleanSeq;
@@ -103,13 +98,8 @@ bool DStarSessionManager::acceptSequence(
         return true;
     }
 
-    /*
-     * Duplicate detection
-     */
+    if (cleanSeq == s.lastSequence) {
 
-    if (cleanSeq ==
-        s.lastSequence)
-    {
         Logger::log(INFO,
             "Duplicate D-Star sequence suppressed:"
             " STREAMID=" +
@@ -120,27 +110,40 @@ bool DStarSessionManager::acceptSequence(
         return false;
     }
 
-    /*
-     * Expected next sequence
-     */
-
     uint8_t expected =
         (s.lastSequence + 1) % 21;
 
-    /*
-     * Out-of-order detection
-     */
-
     if (cleanSeq != expected) {
 
-        Logger::log(INFO,
-            "Out-of-order D-Star sequence:"
-            " STREAMID=" +
-            std::to_string(streamId) +
-            " EXPECTED=" +
-            std::to_string(expected) +
-            " GOT=" +
-            std::to_string(cleanSeq));
+        int forwardGap =
+            (cleanSeq + 21 - expected) % 21;
+
+        if (forwardGap <= 2) {
+
+            Logger::log(INFO,
+                "D-Star jitter tolerated:"
+                " STREAMID=" +
+                std::to_string(streamId) +
+                " EXPECTED=" +
+                std::to_string(expected) +
+                " GOT=" +
+                std::to_string(cleanSeq) +
+                " GAP=" +
+                std::to_string(forwardGap));
+        }
+        else {
+
+            Logger::log(INFO,
+                "Out-of-order D-Star sequence:"
+                " STREAMID=" +
+                std::to_string(streamId) +
+                " EXPECTED=" +
+                std::to_string(expected) +
+                " GOT=" +
+                std::to_string(cleanSeq) +
+                " GAP=" +
+                std::to_string(forwardGap));
+        }
     }
 
     s.lastSequence = cleanSeq;
