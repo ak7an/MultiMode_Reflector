@@ -21,6 +21,7 @@ add_executable(reflector
     src/core/config_manager.cpp
     src/core/loop_guard.cpp 
     src/protocol/protocol_manager.cpp
+    src/core/jitter_buffer.cpp
     src/util/config.cpp
     src/system/timer.cpp
 )

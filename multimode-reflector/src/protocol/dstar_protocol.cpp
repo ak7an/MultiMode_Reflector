@@ -2,6 +2,7 @@
 
 #include "dstar_header.h"
 #include "dstar_session.h"
+#include "../core/jitter_buffer.h"
 
 #include "../core/logger.h"
 #include "../core/lastheard_manager.h"
@@ -124,8 +125,13 @@ bool DStarProtocol::handle(
             return false;
         }
 
-        DStarSessionManager::touchStream(
-            streamId);
+        JitterBuffer::observe(
+    "DSTAR",
+    streamId,
+    sequence);
+
+DStarSessionManager::touchStream(
+    streamId);
 
         Logger::log(INFO,
             "D-Star Voice Frame:"
