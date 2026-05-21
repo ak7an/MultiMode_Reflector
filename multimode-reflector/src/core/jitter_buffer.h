@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <ctime>
 
 struct JitterStats {
@@ -19,13 +20,17 @@ struct JitterStats {
     uint8_t lastSequence;
     bool hasSequence;
 
+    uint8_t expectedSequence;
+
+    std::map<uint8_t, time_t> pending;
+
     time_t lastActivity;
 };
 
 class JitterBuffer {
 public:
 
-    static void observe(
+    static bool observe(
         const std::string& protocol,
         uint16_t streamId,
         uint8_t sequence);
@@ -43,4 +48,8 @@ private:
     static std::string makeKey(
         const std::string& protocol,
         uint16_t streamId);
+
+    static bool processQueue(
+        JitterStats& s,
+        uint8_t sequence);
 };

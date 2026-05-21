@@ -125,12 +125,26 @@ bool DStarProtocol::handle(
             return false;
         }
 
-        JitterBuffer::observe(
-    "DSTAR",
-    streamId,
-    sequence);
+        bool jitterRelease =
+    JitterBuffer::observe(
+        "DSTAR",
+        streamId,
+        sequence);
 
-    JitterBuffer::dump();
+JitterBuffer::dump();
+
+if (!jitterRelease) {
+
+    Logger::log(INFO,
+        "D-Star frame held by jitter buffer:"
+        " STREAMID=" +
+        std::to_string(streamId) +
+        " SEQ=" +
+        std::to_string(sequence & 0x1F));
+
+    return false;
+}
+
 
 DStarSessionManager::touchStream(
     streamId);
