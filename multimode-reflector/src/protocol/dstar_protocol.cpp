@@ -1,10 +1,11 @@
 #include "dstar_protocol.h"
+
 #include "dstar_header.h"
 #include "dstar_session.h"
-#include "../core/lastheard_manager.h"
-#include "../core/loop_guard.h"
 
 #include "../core/logger.h"
+#include "../core/lastheard_manager.h"
+#include "../core/loop_guard.h"
 
 #include <sstream>
 #include <iomanip>
@@ -23,10 +24,14 @@ void DStarProtocol::handle(
        << " data=";
 
     size_t dumpLen =
-        (length > 16) ? 16 : length;
+        (length > 16)
+            ? 16
+            : length;
 
-    for (size_t i = 0; i < dumpLen; ++i) {
-
+    for (size_t i = 0;
+         i < dumpLen;
+         ++i)
+    {
         ss << std::hex
            << std::setw(2)
            << std::setfill('0')
@@ -35,68 +40,88 @@ void DStarProtocol::handle(
     }
 
     Logger::log(INFO, ss.str());
- 
+
     DStarHeader hdr =
-    DStarHeaderParser::parse(
-        data,
-        length);
-
-if (hdr.valid) {
-
-    DStarSessionManager::createOrUpdate(
-        hdr.streamId,
-        peer,
-        hdr.mycall,
-        hdr.urcall,
-        hdr.rpt1,
-        hdr.rpt2);       
-      
-      LastHeardManager::addEntry(
-        hdr.mycall,
-        peer,
-        hdr.streamId);
-
-    Logger::log(INFO,
-        "D-Star Header:"
-        " MYCALL=" + hdr.mycall +
-        " URCALL=" + hdr.urcall +
-        " RPT1=" + hdr.rpt1 +
-        " RPT2=" + hdr.rpt2 +
-        " STREAMID=" +
-        std::to_string(hdr.streamId));
-
-     LastHeardManager::dump();
-}
-else {
+        DStarHeaderParser::parse(
+            data,
+            length);
 
     /*
-     * Possible voice frame
+     * Header frame
      */
 
-    if (length >= 14) {
+    if (hdr.valid) {
+
+        DStarSessionManager::createOrUpdate(
+            hdr.streamId,
+            peer,
+            hdr.mycall,
+            hdr.urcall,
+            hdr.rpt1,
+            hdr.rpt2);
+
+        LastHeardManager::addEntry(
+            hdr.mycall,
+            peer,
+            hdr.streamId);
+
+        Logger::log(INFO,
+            "D-Star Header:"
+            " MYCALL=" + hdr.mycall +
+            " URCALL=" + hdr.urcall +
+            " RPT1=" + hdr.rpt1 +
+            " RPT2=" + hdr.rpt2 +
+            " STREAMID=" +
+            std::to_string(
+                hdr.streamId));
+
+        LastHeardManager::dump();
+
+        return;
+    }
+
+    /*
+     * Voice frame
+     */
+
+    if (length >= 15) {
 
         uint16_t streamId =
             (data[12] << 8) |
              data[13];
-  
-     if (LoopGuard::seenRecently(
-        streamId,
-        peer))
-{
-    Logger::log(INFO,
-        "Loop suppressed for stream " +
-        std::to_string(streamId));
 
-    return;
-}
+        uint8_t sequence =
+            data[14];
+
+        bool endOfTransmission =
+            (sequence & 0x40);
+
+        if (LoopGuard::seenRecently(
+                streamId,
+                peer))
+        {
+            Logger::log(INFO,
+                "Loop suppressed for stream " +
+                std::to_string(streamId));
+
+            return;
+        }
 
         Logger::log(INFO,
             "D-Star Voice Frame:"
             " STREAMID=" +
             std::to_string(streamId) +
+            " SEQ=" +
+            std::to_string(sequence) +
             " LEN=" +
             std::to_string(length));
-    }
-}
 
+        if (endOfTransmission) {
+
+            Logger::log(INFO,
+                "D-Star EOT detected:"
+                " STREAMID=" +
+                std::to_string(streamId));
+        }
+    }
 }
