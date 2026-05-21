@@ -10,8 +10,7 @@ class DStarProtocol :
     public ProtocolInterface
 {
 public:
-
-    void handle(
+    bool handle(
         const uint8_t* data,
         size_t length,
         const std::string& peer) override;

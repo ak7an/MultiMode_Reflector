@@ -10,7 +10,7 @@
 #include <sstream>
 #include <iomanip>
 
-void DStarProtocol::handle(
+bool DStarProtocol::handle(
     const uint8_t* data,
     size_t length,
     const std::string& peer)
@@ -49,7 +49,6 @@ void DStarProtocol::handle(
     /*
      * Header frame
      */
-
     if (hdr.valid) {
 
         DStarSessionManager::createOrUpdate(
@@ -72,18 +71,16 @@ void DStarProtocol::handle(
             " RPT1=" + hdr.rpt1 +
             " RPT2=" + hdr.rpt2 +
             " STREAMID=" +
-            std::to_string(
-                hdr.streamId));
+            std::to_string(hdr.streamId));
 
         LastHeardManager::dump();
 
-        return;
+        return true;
     }
 
     /*
      * Voice frame
      */
-
     if (length >= 15) {
 
         uint16_t streamId =
@@ -96,6 +93,16 @@ void DStarProtocol::handle(
         bool endOfTransmission =
             (sequence & 0x40);
 
+        if (!DStarSessionManager::hasStream(
+                streamId))
+        {
+            Logger::log(INFO,
+                "Ignoring voice frame for unknown stream: " +
+                std::to_string(streamId));
+
+            return false;
+        }
+
         if (LoopGuard::seenRecently(
                 streamId,
                 peer))
@@ -104,8 +111,18 @@ void DStarProtocol::handle(
                 "Loop suppressed for stream " +
                 std::to_string(streamId));
 
-            return;
+            return false;
         }
+
+        if (!DStarSessionManager::acceptSequence(
+                streamId,
+                sequence))
+        {
+            return false;
+        }
+
+        DStarSessionManager::touchStream(
+            streamId);
 
         Logger::log(INFO,
             "D-Star Voice Frame:"
@@ -122,6 +139,13 @@ void DStarProtocol::handle(
                 "D-Star EOT detected:"
                 " STREAMID=" +
                 std::to_string(streamId));
+
+            DStarSessionManager::endStream(
+                streamId);
         }
+
+        return true;
     }
+
+    return false;
 }

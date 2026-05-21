@@ -30,6 +30,11 @@ void DStarSessionManager::createOrUpdate(
     s.rpt1 = rpt1;
     s.rpt2 = rpt2;
 
+    if (isNew) {
+        s.lastSequence = 0;
+        s.hasSequence = false;
+    }
+
     s.lastActivity = time(nullptr);
 
     if (isNew) {
@@ -39,6 +44,86 @@ void DStarSessionManager::createOrUpdate(
             std::to_string(streamId) +
             " MYCALL=" + mycall);
     }
+    else {
+
+        Logger::log(INFO,
+            "D-Star stream updated: " +
+            std::to_string(streamId));
+    }
+}
+
+bool DStarSessionManager::hasStream(
+    uint16_t streamId)
+{
+    return m_streams.count(streamId) > 0;
+}
+
+std::string DStarSessionManager::getStreamPeer(
+    uint16_t streamId)
+{
+    if (!m_streams.count(streamId))
+        return "";
+
+    return m_streams[streamId].peer;
+}
+
+void DStarSessionManager::touchStream(
+    uint16_t streamId)
+{
+    if (!m_streams.count(streamId))
+        return;
+
+    m_streams[streamId].lastActivity =
+        time(nullptr);
+}
+
+bool DStarSessionManager::acceptSequence(
+    uint16_t streamId,
+    uint8_t sequence)
+{
+    if (!m_streams.count(streamId))
+        return false;
+
+    DStarStream& s =
+        m_streams[streamId];
+
+    uint8_t cleanSeq =
+        sequence & 0x1F;
+
+    if (!s.hasSequence) {
+
+        s.lastSequence = cleanSeq;
+        s.hasSequence = true;
+        return true;
+    }
+
+    if (cleanSeq == s.lastSequence) {
+
+        Logger::log(INFO,
+            "Duplicate D-Star sequence suppressed:"
+            " STREAMID=" +
+            std::to_string(streamId) +
+            " SEQ=" +
+            std::to_string(cleanSeq));
+
+        return false;
+    }
+
+    s.lastSequence = cleanSeq;
+    return true;
+}
+
+void DStarSessionManager::endStream(
+    uint16_t streamId)
+{
+    if (!m_streams.count(streamId))
+        return;
+
+    Logger::log(INFO,
+        "D-Star stream ended: " +
+        std::to_string(streamId));
+
+    m_streams.erase(streamId);
 }
 
 void DStarSessionManager::cleanup()
@@ -46,7 +131,7 @@ void DStarSessionManager::cleanup()
     time_t now = time(nullptr);
 
     for (auto it = m_streams.begin();
-         it != m_streams.end();)
+         it != m_streams.end(); )
     {
         if ((now - it->second.lastActivity) > 30) {
 
@@ -57,6 +142,7 @@ void DStarSessionManager::cleanup()
             it = m_streams.erase(it);
         }
         else {
+
             ++it;
         }
     }

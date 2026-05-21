@@ -17,6 +17,9 @@ struct DStarStream {
     std::string rpt1;
     std::string rpt2;
 
+    uint8_t lastSequence;
+    bool hasSequence;
+
     time_t lastActivity;
 };
 
@@ -30,6 +33,22 @@ public:
         const std::string& urcall,
         const std::string& rpt1,
         const std::string& rpt2);
+
+    static bool hasStream(
+        uint16_t streamId);
+
+    static std::string getStreamPeer(
+        uint16_t streamId);
+
+    static void touchStream(
+        uint16_t streamId);
+
+    static bool acceptSequence(
+        uint16_t streamId,
+        uint8_t sequence);
+
+    static void endStream(
+        uint16_t streamId);
 
     static void cleanup();
 
