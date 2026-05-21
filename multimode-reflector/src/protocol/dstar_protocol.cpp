@@ -130,6 +130,8 @@ bool DStarProtocol::handle(
     streamId,
     sequence);
 
+    JitterBuffer::dump();
+
 DStarSessionManager::touchStream(
     streamId);
 

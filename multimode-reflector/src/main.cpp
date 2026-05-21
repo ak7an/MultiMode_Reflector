@@ -9,6 +9,7 @@
 #include "protocol/dstar_session.h"
 #include "protocol/protocol_manager.h"
 #include "protocol/dstar_protocol.h"
+#include "core/jitter_buffer.h"
 
 
 int main() {
@@ -32,6 +33,7 @@ int main() {
     timer.start([&]() {
         server.tick();
         DStarSessionManager::cleanup();
+        JitterBuffer::cleanup();
     });
 
     while (true) {
