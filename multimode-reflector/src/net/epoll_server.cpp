@@ -198,10 +198,13 @@ ProtocolInterface* handler =
 
 if (handler) {
 
+bool shouldForward =
     handler->handle(
         reinterpret_cast<uint8_t*>(buffer),
         received,
         key);
+
+if (shouldForward) {
 
     PeerManager::broadcastFrame(
         m_socket,
@@ -210,6 +213,7 @@ if (handler) {
         key);
 }
 
+}
 
 }
 
