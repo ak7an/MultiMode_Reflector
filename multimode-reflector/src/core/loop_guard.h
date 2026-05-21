@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <unordered_map>
+#include <string>
 #include <ctime>
 #include <cstdint>
 
@@ -10,6 +10,7 @@ public:
 
     static bool seenRecently(
         uint16_t streamId,
+        uint8_t sequence,
         const std::string& peer);
 
 private:

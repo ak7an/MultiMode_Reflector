@@ -104,8 +104,11 @@ bool DStarProtocol::handle(
         }
 
         if (LoopGuard::seenRecently(
-                streamId,
-                peer))
+              streamId,
+              sequence,
+                  peer))
+                
+               
         {
             Logger::log(INFO,
                 "Loop suppressed for stream " +

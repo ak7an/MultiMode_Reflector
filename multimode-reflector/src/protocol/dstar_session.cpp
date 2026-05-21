@@ -77,6 +77,7 @@ void DStarSessionManager::touchStream(
         time(nullptr);
 }
 
+
 bool DStarSessionManager::acceptSequence(
     uint16_t streamId,
     uint8_t sequence)
@@ -90,15 +91,25 @@ bool DStarSessionManager::acceptSequence(
     uint8_t cleanSeq =
         sequence & 0x1F;
 
+    /*
+     * First sequence
+     */
+
     if (!s.hasSequence) {
 
         s.lastSequence = cleanSeq;
         s.hasSequence = true;
+
         return true;
     }
 
-    if (cleanSeq == s.lastSequence) {
+    /*
+     * Duplicate detection
+     */
 
+    if (cleanSeq ==
+        s.lastSequence)
+    {
         Logger::log(INFO,
             "Duplicate D-Star sequence suppressed:"
             " STREAMID=" +
@@ -109,7 +120,31 @@ bool DStarSessionManager::acceptSequence(
         return false;
     }
 
+    /*
+     * Expected next sequence
+     */
+
+    uint8_t expected =
+        (s.lastSequence + 1) % 21;
+
+    /*
+     * Out-of-order detection
+     */
+
+    if (cleanSeq != expected) {
+
+        Logger::log(INFO,
+            "Out-of-order D-Star sequence:"
+            " STREAMID=" +
+            std::to_string(streamId) +
+            " EXPECTED=" +
+            std::to_string(expected) +
+            " GOT=" +
+            std::to_string(cleanSeq));
+    }
+
     s.lastSequence = cleanSeq;
+
     return true;
 }
 
