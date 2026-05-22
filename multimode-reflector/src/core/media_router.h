@@ -3,6 +3,7 @@
 #include "media_frame.h"
 
 #include <string>
+#include <vector>
 
 enum class RouteAction {
 
@@ -19,7 +20,10 @@ struct MediaRouteResult {
     RouteAction action;
 
     std::string reason;
+
+    std::vector<std::string> destinations;
 };
+
 
 class MediaRouter {
 public:

@@ -76,6 +76,8 @@ MediaRouteResult MediaRouter::route(
 
     result.reason =
         "accepted";
+      result.destinations.push_back(
+    "ALL");
 
     Logger::log(INFO,
         "MediaRouter route:"
@@ -88,7 +90,8 @@ MediaRouteResult MediaRouter::route(
         " EOT=" +
         std::to_string(frame.endOfTransmission) +
         " RESULT=" +
-        result.reason);
+        result.reason +
+    " DEST=ALL");
 
     return result;
 }
