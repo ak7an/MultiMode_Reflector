@@ -35,9 +35,11 @@ MediaRouteResult MediaRouter::route(
 {
     MediaRouteResult result{};
 
-result.action =
-    RouteAction::DROP;
-    result.reason = "unset";
+    result.action =
+        RouteAction::DROP;
+
+    result.reason =
+        "unset";
 
     if (frame.protocol ==
         MediaProtocol::UNKNOWN)
@@ -50,13 +52,30 @@ result.action =
             result.reason);
 
         return result;
-        result.action =
-    RouteAction::FORWARD;
     }
 
-result.action =
-    RouteAction::FORWARD;
-    result.reason = "accepted";
+    if (frame.endOfTransmission) {
+
+        result.action =
+            RouteAction::RECORD;
+
+        result.reason =
+            "record eot";
+
+        Logger::log(INFO,
+            "MediaRouter action:"
+            " RECORD"
+            " STREAMID=" +
+            std::to_string(frame.streamId));
+
+        return result;
+    }
+
+    result.action =
+        RouteAction::FORWARD;
+
+    result.reason =
+        "accepted";
 
     Logger::log(INFO,
         "MediaRouter route:"

@@ -129,6 +129,15 @@ ProtocolResult DStarProtocol::handle(
             MediaRouter::route(
                 media);
 
+            if (routeResult.action ==
+    RouteAction::RECORD)
+{
+    Logger::log(INFO,
+        "Record pipeline placeholder:"
+        " STREAMID=" +
+        std::to_string(streamId));
+}
+
          if (routeResult.action ==
     RouteAction::DROP)
 {
