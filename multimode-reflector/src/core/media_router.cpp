@@ -76,8 +76,17 @@ MediaRouteResult MediaRouter::route(
 
     result.reason =
         "accepted";
-      result.destinations.push_back(
-    "ALL");
+MediaDestination dest{};
+
+dest.type =
+    MediaDestinationType::ALL;
+
+dest.value =
+    "ALL";
+
+result.destinations.push_back(
+    dest);
+
 
     Logger::log(INFO,
         "MediaRouter route:"

@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include "media_destination.h"
 
 enum class RouteAction {
 
@@ -20,8 +21,8 @@ struct MediaRouteResult {
     RouteAction action;
 
     std::string reason;
+    std::vector<MediaDestination> destinations;
 
-    std::vector<std::string> destinations;
 };
 
 
