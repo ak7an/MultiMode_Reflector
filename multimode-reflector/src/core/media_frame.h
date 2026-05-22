@@ -1,3 +1,9 @@
+#pragma once
+
+#include <cstdint>
+#include <string>
+#include <vector>
+
 enum class MediaProtocol {
 
     DSTAR,

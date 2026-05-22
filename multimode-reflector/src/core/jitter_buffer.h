@@ -1,5 +1,7 @@
 #pragma once
 
+#include "media_frame.h"
+
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -7,20 +9,11 @@
 #include <ctime>
 #include <vector>
 
-struct BufferedFrame {
-
-    uint8_t sequence;
-
-    std::vector<uint8_t> payload;
-
-    time_t arrivalTime;
-};
-
 struct JitterResult {
 
     bool releaseCurrent;
 
-    std::vector<BufferedFrame> releasedFrames;
+    std::vector<MediaFrame> releasedFrames;
 };
 
 struct JitterStats {
@@ -39,7 +32,7 @@ struct JitterStats {
 
     uint8_t expectedSequence;
 
-    std::map<uint8_t, BufferedFrame> pending;
+    std::map<uint8_t, MediaFrame> pending;
 
     time_t lastActivity;
 };
@@ -48,11 +41,7 @@ class JitterBuffer {
 public:
 
     static JitterResult observe(
-        const std::string& protocol,
-        uint16_t streamId,
-        uint8_t sequence,
-        const uint8_t* data,
-        size_t length);
+        const MediaFrame& frame);
 
     static void dump();
 
@@ -65,7 +54,7 @@ private:
         JitterStats> m_stats;
 
     static std::string makeKey(
-        const std::string& protocol,
+        MediaProtocol protocol,
         uint16_t streamId);
 
     static JitterResult processQueue(

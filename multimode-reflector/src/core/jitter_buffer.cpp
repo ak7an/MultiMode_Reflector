@@ -7,35 +7,63 @@ std::unordered_map<
     JitterStats>
 JitterBuffer::m_stats;
 
+static std::string protocolToString(
+    MediaProtocol protocol)
+{
+    switch (protocol) {
+
+    case MediaProtocol::DSTAR:
+        return "DSTAR";
+
+    case MediaProtocol::DMR:
+        return "DMR";
+
+    case MediaProtocol::YSF:
+        return "YSF";
+
+    case MediaProtocol::P25:
+        return "P25";
+
+    case MediaProtocol::NXDN:
+        return "NXDN";
+
+    case MediaProtocol::M17:
+        return "M17";
+
+    default:
+        return "UNKNOWN";
+    }
+}
+
 std::string JitterBuffer::makeKey(
-    const std::string& protocol,
+    MediaProtocol protocol,
     uint16_t streamId)
 {
-    return protocol + ":" +
+    return protocolToString(protocol) + ":" +
         std::to_string(streamId);
 }
 
 JitterResult JitterBuffer::observe(
-    const std::string& protocol,
-    uint16_t streamId,
-    uint8_t sequence,
-    const uint8_t* data,
-    size_t length)
+    const MediaFrame& frame)
 {
+    std::string protocolName =
+        protocolToString(frame.protocol);
+
     std::string key =
-        makeKey(protocol,
-                streamId);
+        makeKey(
+            frame.protocol,
+            frame.streamId);
 
     JitterStats& s =
         m_stats[key];
 
     uint8_t cleanSeq =
-        sequence & 0x1F;
+        frame.sequence & 0x1F;
 
     if (s.packetsObserved == 0) {
 
-        s.protocol = protocol;
-        s.streamId = streamId;
+        s.protocol = protocolName;
+        s.streamId = frame.streamId;
 
         s.packetsObserved = 0;
         s.duplicateCount = 0;
@@ -51,26 +79,20 @@ JitterResult JitterBuffer::observe(
     s.lastActivity =
         time(nullptr);
 
-    BufferedFrame frame{};
+    MediaFrame queuedFrame =
+        frame;
 
-    frame.sequence =
+    queuedFrame.sequence =
         cleanSeq;
 
-    frame.arrivalTime =
-        time(nullptr);
-
-    frame.payload.assign(
-        data,
-        data + length);
-
     s.pending[cleanSeq] =
-        frame;
+        queuedFrame;
 
     Logger::log(INFO,
         "JitterBuffer queued:"
-        " PROTO=" + protocol +
+        " PROTO=" + protocolName +
         " STREAMID=" +
-        std::to_string(streamId) +
+        std::to_string(frame.streamId) +
         " SEQ=" +
         std::to_string(cleanSeq));
 
@@ -101,7 +123,7 @@ JitterResult JitterBuffer::processQueue(
         uint8_t releasedSeq =
             s.expectedSequence;
 
-        BufferedFrame frame =
+        MediaFrame frame =
             s.pending[releasedSeq];
 
         Logger::log(INFO,

@@ -153,13 +153,10 @@ Logger::log(INFO,
             return result;
         }
 
-        JitterResult jitterResult =
-            JitterBuffer::observe(
-                "DSTAR",
-                streamId,
-                sequence,
-                data,
-                length);
+
+JitterResult jitterResult =
+    JitterBuffer::observe(
+        media);
 
         JitterBuffer::dump();
 
