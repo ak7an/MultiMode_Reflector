@@ -15,10 +15,12 @@ std::string JitterBuffer::makeKey(
         std::to_string(streamId);
 }
 
-bool JitterBuffer::observe(
+JitterResult JitterBuffer::observe(
     const std::string& protocol,
     uint16_t streamId,
-    uint8_t sequence)
+    uint8_t sequence,
+    const uint8_t* data,
+    size_t length)
 {
     std::string key =
         makeKey(protocol,
@@ -49,8 +51,20 @@ bool JitterBuffer::observe(
     s.lastActivity =
         time(nullptr);
 
-    s.pending[cleanSeq] =
+    BufferedFrame frame{};
+
+    frame.sequence =
+        cleanSeq;
+
+    frame.arrivalTime =
         time(nullptr);
+
+    frame.payload.assign(
+        data,
+        data + length);
+
+    s.pending[cleanSeq] =
+        frame;
 
     Logger::log(INFO,
         "JitterBuffer queued:"
@@ -65,11 +79,13 @@ bool JitterBuffer::observe(
         cleanSeq);
 }
 
-bool JitterBuffer::processQueue(
+JitterResult JitterBuffer::processQueue(
     JitterStats& s,
     uint8_t sequence)
 {
-    bool releasedRequestedFrame = false;
+    JitterResult result{};
+
+    result.releaseCurrent = false;
 
     if (!s.hasSequence) {
 
@@ -85,6 +101,9 @@ bool JitterBuffer::processQueue(
         uint8_t releasedSeq =
             s.expectedSequence;
 
+        BufferedFrame frame =
+            s.pending[releasedSeq];
+
         Logger::log(INFO,
             "JitterBuffer release:"
             " STREAMID=" +
@@ -95,7 +114,12 @@ bool JitterBuffer::processQueue(
         if (releasedSeq ==
             (sequence & 0x1F))
         {
-            releasedRequestedFrame = true;
+            result.releaseCurrent = true;
+        }
+        else {
+
+            result.releasedFrames.push_back(
+                frame);
         }
 
         s.lastSequence =
@@ -108,8 +132,9 @@ bool JitterBuffer::processQueue(
             (s.expectedSequence + 1) % 21;
     }
 
-    if (!releasedRequestedFrame) {
-
+    if (!result.releaseCurrent &&
+        result.releasedFrames.empty())
+    {
         Logger::log(INFO,
             "JitterBuffer holding:"
             " STREAMID=" +
@@ -120,9 +145,8 @@ bool JitterBuffer::processQueue(
             std::to_string(s.pending.size()));
     }
 
-    return releasedRequestedFrame;
+    return result;
 }
-
 
 void JitterBuffer::dump()
 {

@@ -2,20 +2,23 @@
 
 #include "dstar_header.h"
 #include "dstar_session.h"
-#include "../core/jitter_buffer.h"
 
 #include "../core/logger.h"
 #include "../core/lastheard_manager.h"
 #include "../core/loop_guard.h"
+#include "../core/jitter_buffer.h"
 
 #include <sstream>
 #include <iomanip>
 
-bool DStarProtocol::handle(
+ProtocolResult DStarProtocol::handle(
     const uint8_t* data,
     size_t length,
     const std::string& peer)
 {
+    ProtocolResult result{};
+    result.forwardCurrent = false;
+
     std::stringstream ss;
 
     ss << "D-Star frame from "
@@ -47,9 +50,6 @@ bool DStarProtocol::handle(
             data,
             length);
 
-    /*
-     * Header frame
-     */
     if (hdr.valid) {
 
         DStarSessionManager::createOrUpdate(
@@ -76,12 +76,10 @@ bool DStarProtocol::handle(
 
         LastHeardManager::dump();
 
-        return true;
+        result.forwardCurrent = true;
+        return result;
     }
 
-    /*
-     * Voice frame
-     */
     if (length >= 15) {
 
         uint16_t streamId =
@@ -101,53 +99,74 @@ bool DStarProtocol::handle(
                 "Ignoring voice frame for unknown stream: " +
                 std::to_string(streamId));
 
-            return false;
+            return result;
         }
 
         if (LoopGuard::seenRecently(
-              streamId,
-              sequence,
-                  peer))
-                
-               
+                streamId,
+                sequence,
+                peer))
         {
             Logger::log(INFO,
                 "Loop suppressed for stream " +
                 std::to_string(streamId));
 
-            return false;
+            return result;
         }
 
         if (!DStarSessionManager::acceptSequence(
                 streamId,
                 sequence))
         {
-            return false;
+            return result;
         }
 
-        bool jitterRelease =
-    JitterBuffer::observe(
-        "DSTAR",
-        streamId,
-        sequence);
+        JitterResult jitterResult =
+            JitterBuffer::observe(
+                "DSTAR",
+                streamId,
+                sequence,
+                data,
+                length);
 
-JitterBuffer::dump();
+        JitterBuffer::dump();
 
-if (!jitterRelease) {
+        for (const auto& frame :
+             jitterResult.releasedFrames)
+        {
+            ProtocolFrame pf{};
 
-    Logger::log(INFO,
-        "D-Star frame held by jitter buffer:"
-        " STREAMID=" +
-        std::to_string(streamId) +
-        " SEQ=" +
-        std::to_string(sequence & 0x1F));
+            pf.payload =
+                frame.payload;
 
-    return false;
-}
+            result.extraFrames.push_back(
+                pf);
 
+            Logger::log(INFO,
+                "D-Star buffered frame ready:"
+                " STREAMID=" +
+                std::to_string(streamId) +
+                " SEQ=" +
+                std::to_string(frame.sequence) +
+                " LEN=" +
+                std::to_string(
+                    frame.payload.size()));
+        }
 
-DStarSessionManager::touchStream(
-    streamId);
+        if (!jitterResult.releaseCurrent) {
+
+            Logger::log(INFO,
+                "D-Star frame held by jitter buffer:"
+                " STREAMID=" +
+                std::to_string(streamId) +
+                " SEQ=" +
+                std::to_string(sequence & 0x1F));
+
+            return result;
+        }
+
+        DStarSessionManager::touchStream(
+            streamId);
 
         Logger::log(INFO,
             "D-Star Voice Frame:"
@@ -169,8 +188,9 @@ DStarSessionManager::touchStream(
                 streamId);
         }
 
-        return true;
+        result.forwardCurrent = true;
+        return result;
     }
 
-    return false;
+    return result;
 }

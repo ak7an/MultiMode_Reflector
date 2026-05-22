@@ -198,13 +198,13 @@ ProtocolInterface* handler =
 
 if (handler) {
 
-bool shouldForward =
+ProtocolResult result =
     handler->handle(
         reinterpret_cast<uint8_t*>(buffer),
         received,
         key);
 
-if (shouldForward) {
+if (result.forwardCurrent) {
 
     PeerManager::broadcastFrame(
         m_socket,
@@ -212,6 +212,17 @@ if (shouldForward) {
         received,
         key);
 }
+
+for (const auto& frame :
+     result.extraFrames)
+{
+    PeerManager::broadcastFrame(
+        m_socket,
+        frame.payload.data(),
+        frame.payload.size(),
+        key);
+}
+
 
 }
 
