@@ -2,9 +2,7 @@
 
 #include "../core/media_destination.h"
 
-#include <cstddef>
 #include <cstdint>
-#include <string>
 #include <vector>
 
 struct ProtocolFrame {
@@ -21,9 +19,10 @@ struct ProtocolResult {
     std::vector<MediaDestination> destinations;
 };
 
-class ProtocolInterface {
+class Protocol {
 public:
-    virtual ~ProtocolInterface() = default;
+
+    virtual ~Protocol() = default;
 
     virtual ProtocolResult handle(
         const uint8_t* data,

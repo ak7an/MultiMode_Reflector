@@ -129,22 +129,23 @@ ProtocolResult DStarProtocol::handle(
             MediaRouter::route(
                 media);
 
-            if (routeResult.action ==
-    RouteAction::RECORD)
-{
-    Logger::log(INFO,
-        "Record pipeline placeholder:"
-        " STREAMID=" +
-        std::to_string(streamId));
-}
+        result.destinations =
+            routeResult.destinations;
 
-         if (routeResult.action ==
-    RouteAction::DROP)
-{
+        if (routeResult.action ==
+            RouteAction::RECORD)
+        {
+            Logger::log(INFO,
+                "Record pipeline placeholder:"
+                " STREAMID=" +
+                std::to_string(streamId));
+        }
 
-       return result;
-}
-
+        if (routeResult.action ==
+            RouteAction::DROP)
+        {
+            return result;
+        }
 
         if (!DStarSessionManager::hasStream(
                 streamId))
