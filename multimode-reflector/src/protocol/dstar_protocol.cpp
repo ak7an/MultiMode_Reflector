@@ -94,48 +94,46 @@ ProtocolResult DStarProtocol::handle(
         bool endOfTransmission =
             (sequence & 0x40);
 
-MediaFrame media{};
+        MediaFrame media{};
 
-media.protocol =
-    MediaProtocol::DSTAR;
+        media.protocol =
+            MediaProtocol::DSTAR;
 
-media.streamId =
-    streamId;
+        media.streamId =
+            streamId;
 
-media.sequence =
-    sequence & 0x1F;
+        media.sequence =
+            sequence & 0x1F;
 
-media.endOfTransmission =
-    endOfTransmission;
+        media.endOfTransmission =
+            endOfTransmission;
 
-media.sourcePeer =
-    peer;
+        media.sourcePeer =
+            peer;
 
-media.payload.assign(
-    data,
-    data + length);
+        media.payload.assign(
+            data,
+            data + length);
 
-Logger::log(INFO,
-    "MediaFrame created:"
-    " PROTO=DSTAR"
-    " STREAMID=" +
-    std::to_string(media.streamId) +
-    " SEQ=" +
-    std::to_string(media.sequence) +
-    " EOT=" +
-    std::to_string(media.endOfTransmission));
-     MediaRouteResult routeResult =
-    MediaRouter::route(
-        media);
+        Logger::log(INFO,
+            "MediaFrame created:"
+            " PROTO=DSTAR"
+            " STREAMID=" +
+            std::to_string(media.streamId) +
+            " SEQ=" +
+            std::to_string(media.sequence) +
+            " EOT=" +
+            std::to_string(media.endOfTransmission));
 
-if (!routeResult.forward) {
+        MediaRouteResult routeResult =
+            MediaRouter::route(
+                media);
 
-    return result;
-}  
+        if (!routeResult.forward) {
 
-{
-    return result;
-}
+            return result;
+        }
+
         if (!DStarSessionManager::hasStream(
                 streamId))
         {
@@ -165,10 +163,9 @@ if (!routeResult.forward) {
             return result;
         }
 
-
-JitterResult jitterResult =
-    JitterBuffer::observe(
-        media);
+        JitterResult jitterResult =
+            JitterBuffer::observe(
+                media);
 
         JitterBuffer::dump();
 
