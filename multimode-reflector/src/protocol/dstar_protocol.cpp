@@ -7,6 +7,7 @@
 #include "../core/lastheard_manager.h"
 #include "../core/loop_guard.h"
 #include "../core/jitter_buffer.h"
+#include "../core/media_frame.h"
 
 #include <sstream>
 #include <iomanip>
@@ -91,6 +92,37 @@ ProtocolResult DStarProtocol::handle(
 
         bool endOfTransmission =
             (sequence & 0x40);
+
+MediaFrame media{};
+
+media.protocol =
+    MediaProtocol::DSTAR;
+
+media.streamId =
+    streamId;
+
+media.sequence =
+    sequence & 0x1F;
+
+media.endOfTransmission =
+    endOfTransmission;
+
+media.sourcePeer =
+    peer;
+
+media.payload.assign(
+    data,
+    data + length);
+
+Logger::log(INFO,
+    "MediaFrame created:"
+    " PROTO=DSTAR"
+    " STREAMID=" +
+    std::to_string(media.streamId) +
+    " SEQ=" +
+    std::to_string(media.sequence) +
+    " EOT=" +
+    std::to_string(media.endOfTransmission));
 
         if (!DStarSessionManager::hasStream(
                 streamId))
