@@ -5,6 +5,6 @@
 class MediaRouter {
 public:
 
-    static void route(
+    static bool route(
         const MediaFrame& frame);
 };

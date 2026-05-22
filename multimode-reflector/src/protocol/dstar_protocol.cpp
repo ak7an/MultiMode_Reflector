@@ -124,9 +124,11 @@ Logger::log(INFO,
     std::to_string(media.sequence) +
     " EOT=" +
     std::to_string(media.endOfTransmission));
-      MediaRouter::route(
-    media);
-
+      if (!MediaRouter::route(
+        media))
+{
+    return result;
+}
         if (!DStarSessionManager::hasStream(
                 streamId))
         {
