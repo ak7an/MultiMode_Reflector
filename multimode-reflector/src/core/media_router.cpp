@@ -30,18 +30,29 @@ static std::string protocolToString(
     }
 }
 
-bool MediaRouter::route(
+MediaRouteResult MediaRouter::route(
     const MediaFrame& frame)
 {
+    MediaRouteResult result{};
+
+    result.forward = false;
+    result.reason = "unset";
+
     if (frame.protocol ==
         MediaProtocol::UNKNOWN)
     {
-        Logger::log(INFO,
-            "MediaRouter drop:"
-            " UNKNOWN protocol");
+        result.reason =
+            "unknown protocol";
 
-        return false;
+        Logger::log(INFO,
+            "MediaRouter drop: " +
+            result.reason);
+
+        return result;
     }
+
+    result.forward = true;
+    result.reason = "accepted";
 
     Logger::log(INFO,
         "MediaRouter route:"
@@ -52,7 +63,9 @@ bool MediaRouter::route(
         " SEQ=" +
         std::to_string(frame.sequence) +
         " EOT=" +
-        std::to_string(frame.endOfTransmission));
+        std::to_string(frame.endOfTransmission) +
+        " RESULT=" +
+        result.reason);
 
-    return true;
+    return result;
 }

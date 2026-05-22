@@ -124,8 +124,15 @@ Logger::log(INFO,
     std::to_string(media.sequence) +
     " EOT=" +
     std::to_string(media.endOfTransmission));
-      if (!MediaRouter::route(
-        media))
+     MediaRouteResult routeResult =
+    MediaRouter::route(
+        media);
+
+if (!routeResult.forward) {
+
+    return result;
+}  
+
 {
     return result;
 }
