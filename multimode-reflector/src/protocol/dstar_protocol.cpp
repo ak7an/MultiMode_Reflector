@@ -8,6 +8,7 @@
 #include "../core/loop_guard.h"
 #include "../core/jitter_buffer.h"
 #include "../core/media_frame.h"
+#include "../core/media_router.h"
 
 #include <sstream>
 #include <iomanip>
@@ -123,6 +124,8 @@ Logger::log(INFO,
     std::to_string(media.sequence) +
     " EOT=" +
     std::to_string(media.endOfTransmission));
+      MediaRouter::route(
+    media);
 
         if (!DStarSessionManager::hasStream(
                 streamId))
