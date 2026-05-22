@@ -4,9 +4,19 @@
 
 #include <string>
 
+enum class RouteAction {
+
+    DROP,
+    FORWARD,
+    TRANSCODE,
+    MIRROR,
+    RECORD,
+    MIX
+};
+
 struct MediaRouteResult {
 
-    bool forward;
+    RouteAction action;
 
     std::string reason;
 };

@@ -129,10 +129,13 @@ ProtocolResult DStarProtocol::handle(
             MediaRouter::route(
                 media);
 
-        if (!routeResult.forward) {
+         if (routeResult.action ==
+    RouteAction::DROP)
+{
 
-            return result;
-        }
+       return result;
+}
+
 
         if (!DStarSessionManager::hasStream(
                 streamId))

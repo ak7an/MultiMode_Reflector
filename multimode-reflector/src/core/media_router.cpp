@@ -35,7 +35,8 @@ MediaRouteResult MediaRouter::route(
 {
     MediaRouteResult result{};
 
-    result.forward = false;
+result.action =
+    RouteAction::DROP;
     result.reason = "unset";
 
     if (frame.protocol ==
@@ -49,9 +50,12 @@ MediaRouteResult MediaRouter::route(
             result.reason);
 
         return result;
+        result.action =
+    RouteAction::FORWARD;
     }
 
-    result.forward = true;
+result.action =
+    RouteAction::FORWARD;
     result.reason = "accepted";
 
     Logger::log(INFO,
