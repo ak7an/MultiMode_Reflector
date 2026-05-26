@@ -1,12 +1,36 @@
 #include <arpa/inet.h>
+#include <chrono>
+#include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <sys/socket.h>
 #include <unistd.h>
 
+static std::string timestamp()
+{
+    auto now =
+        std::chrono::system_clock::now();
+
+    auto t =
+        std::chrono::system_clock::to_time_t(now);
+
+    std::tm* tm =
+        std::localtime(&t);
+
+    std::ostringstream ss;
+
+    ss << std::put_time(
+        tm,
+        "%Y-%m-%d %H:%M:%S");
+
+    return ss.str();
+}
+
 int main()
 {
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    int sock =
+        socket(AF_INET, SOCK_DGRAM, 0);
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
@@ -17,7 +41,9 @@ int main()
          reinterpret_cast<sockaddr*>(&addr),
          sizeof(addr));
 
-    std::cout << "YSF listener on UDP 9001" << std::endl;
+    std::cout
+        << "YSF listener on UDP 9001"
+        << std::endl;
 
     uint8_t buffer[512];
 
@@ -32,23 +58,29 @@ int main()
         if (len <= 0)
             continue;
 
-        std::cout << "Received "
-                  << len
-                  << " bytes: ";
+        std::ostringstream hex;
 
         for (ssize_t i = 0;
              i < len;
              ++i)
         {
-            std::cout
+            hex
                 << std::hex
                 << std::setw(2)
                 << std::setfill('0')
-                << static_cast<int>(buffer[i])
-                << " ";
+                << static_cast<int>(buffer[i]);
+
+            if (i + 1 < len)
+                hex << " ";
         }
 
-        std::cout << std::dec << std::endl;
+        std::cout
+            << timestamp()
+            << " | LEN="
+            << len
+            << " | HEX="
+            << hex.str()
+            << std::endl;
     }
 
     close(sock);
