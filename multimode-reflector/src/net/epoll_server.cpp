@@ -246,6 +246,12 @@ for (const auto& media :
             " LEN=" +
             std::to_string(
                 packet.size()));
+
+        PeerManager::broadcastFrame(
+            m_socket,
+            packet.data(),
+            packet.size(),
+            key);
     }
 }
 
