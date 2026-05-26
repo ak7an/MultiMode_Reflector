@@ -1,20 +1,15 @@
 #!/bin/bash
 set -e
 
-LATEST=$(ls -t captures/ysf/ysf_capture_*.txt 2>/dev/null | head -1)
+for FILE in $(ls -t captures/ysf/*.txt 2>/dev/null); do
+    HEX=$(grep "Received" "$FILE" | tail -1 | sed 's/^.*bytes: //')
 
-if [ -z "$LATEST" ]; then
-    echo "No YSF captures found."
-    exit 1
-fi
+    if [ -n "$HEX" ]; then
+        echo "Using capture: $FILE"
+        ./ysf_analyze "$HEX"
+        exit 0
+    fi
+done
 
-echo "Using capture: $LATEST"
-
-HEX=$(grep "Received" "$LATEST" | tail -1 | sed 's/^.*bytes: //')
-
-if [ -z "$HEX" ]; then
-    echo "No packet data found in capture."
-    exit 1
-fi
-
-./ysf_analyze "$HEX"
+echo "No packet data found in any YSF capture."
+exit 1
