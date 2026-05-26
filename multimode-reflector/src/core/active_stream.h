@@ -26,4 +26,7 @@ private:
     static uint16_t m_streamId;
     static std::chrono::steady_clock::time_point m_startedAt;
     static std::chrono::steady_clock::time_point m_lastSeen;
+
+    static bool m_hangActive;
+    static std::chrono::steady_clock::time_point m_hangUntil;
 };

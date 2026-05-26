@@ -12,11 +12,33 @@ ActiveStream::m_startedAt;
 std::chrono::steady_clock::time_point
 ActiveStream::m_lastSeen;
 
+bool ActiveStream::m_hangActive = false;
+
+std::chrono::steady_clock::time_point
+ActiveStream::m_hangUntil;
+
 bool ActiveStream::accept(
     const MediaFrame& frame)
 {
     auto now =
         std::chrono::steady_clock::now();
+
+    if (m_hangActive &&
+        now < m_hangUntil)
+    {
+        Logger::log(WARN,
+            "ActiveStream rejected during hang time:"
+            " STREAMID=" +
+            std::to_string(frame.streamId));
+
+        return false;
+    }
+
+    if (m_hangActive &&
+        now >= m_hangUntil)
+    {
+        m_hangActive = false;
+    }
 
     if (!m_active) {
 
@@ -71,6 +93,15 @@ void ActiveStream::end(
             std::chrono::steady_clock::time_point{};
         m_lastSeen =
             std::chrono::steady_clock::time_point{};
+
+        m_hangActive = true;
+        m_hangUntil =
+            std::chrono::steady_clock::now() +
+            std::chrono::milliseconds(2000);
+
+        Logger::log(INFO,
+            "ActiveStream hang time started:"
+            " MS=2000");
     }
 }
 
@@ -104,13 +135,9 @@ void ActiveStream::checkTimeout(
             " IDLE_MS=" +
             std::to_string(idleAgeMs));
 
-        m_active = false;
-        m_protocol = MediaProtocol::UNKNOWN;
-        m_streamId = 0;
-        m_startedAt =
-            std::chrono::steady_clock::time_point{};
-        m_lastSeen =
-            std::chrono::steady_clock::time_point{};
+        end(
+            m_protocol,
+            m_streamId);
 
         return;
     }
@@ -124,12 +151,8 @@ void ActiveStream::checkTimeout(
             " TX_MS=" +
             std::to_string(txAgeMs));
 
-        m_active = false;
-        m_protocol = MediaProtocol::UNKNOWN;
-        m_streamId = 0;
-        m_startedAt =
-            std::chrono::steady_clock::time_point{};
-        m_lastSeen =
-            std::chrono::steady_clock::time_point{};
+        end(
+            m_protocol,
+            m_streamId);
     }
 }
