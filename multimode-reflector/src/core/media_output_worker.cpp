@@ -13,12 +13,19 @@
 #include <thread>
 
 bool MediaOutputWorker::m_running = false;
+int MediaOutputWorker::m_idleTimeoutMs = 15000;
+int MediaOutputWorker::m_maxTxMs = 180000;
 
-void MediaOutputWorker::start()
+void MediaOutputWorker::start(
+    int idleTimeoutMs,
+    int maxTxMs)
 {
     if (m_running) {
         return;
     }
+
+    m_idleTimeoutMs = idleTimeoutMs;
+    m_maxTxMs = maxTxMs;
 
     m_running = true;
 
@@ -44,7 +51,8 @@ void MediaOutputWorker::run()
     while (m_running) {
 
         ActiveStream::checkTimeout(
-            15000);
+            m_idleTimeoutMs,
+            m_maxTxMs);
 
         MediaFrame frame{};
 

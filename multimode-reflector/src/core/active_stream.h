@@ -16,12 +16,14 @@ public:
         uint16_t streamId);
 
     static void checkTimeout(
-        int timeoutMs);
+        int idleTimeoutMs,
+        int maxTxMs);
 
 private:
 
     static bool m_active;
     static MediaProtocol m_protocol;
     static uint16_t m_streamId;
+    static std::chrono::steady_clock::time_point m_startedAt;
     static std::chrono::steady_clock::time_point m_lastSeen;
 };

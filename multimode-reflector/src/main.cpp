@@ -22,7 +22,9 @@ int main() {
 
     Logger::log(INFO, "Reflector starting...");
 
-    MediaOutputWorker::start();
+    MediaOutputWorker::start(
+        cfg.getInt("idle_timeout_ms", 15000),
+        cfg.getInt("max_tx_ms", 180000));
 
     EpollServer server;
     server.init(cfg.getInt("port", 9000));
