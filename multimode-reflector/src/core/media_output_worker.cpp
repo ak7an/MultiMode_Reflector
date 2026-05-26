@@ -1,5 +1,6 @@
 #include "media_output_worker.h"
 
+#include "active_stream.h"
 #include "debug_udp_sender.h"
 #include "logger.h"
 #include "media_output_queue.h"
@@ -41,6 +42,9 @@ void MediaOutputWorker::stop()
 void MediaOutputWorker::run()
 {
     while (m_running) {
+
+        ActiveStream::checkTimeout(
+            15000);
 
         MediaFrame frame{};
 

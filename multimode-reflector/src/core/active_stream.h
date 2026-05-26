@@ -2,6 +2,7 @@
 
 #include "media_frame.h"
 
+#include <chrono>
 #include <cstdint>
 
 class ActiveStream {
@@ -14,9 +15,13 @@ public:
         MediaProtocol protocol,
         uint16_t streamId);
 
+    static void checkTimeout(
+        int timeoutMs);
+
 private:
 
     static bool m_active;
     static MediaProtocol m_protocol;
     static uint16_t m_streamId;
+    static std::chrono::steady_clock::time_point m_lastSeen;
 };
