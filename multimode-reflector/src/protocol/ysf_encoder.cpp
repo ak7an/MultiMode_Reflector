@@ -2,24 +2,23 @@
 
 #include "../core/logger.h"
 
-#include <cstring>
-
 std::vector<uint8_t> YSFEncoder::encode(
     const MediaFrame& frame)
 {
     std::vector<uint8_t> packet;
 
-    packet.resize(32, 0);
-
     /*
-     * Synthetic YSF marker for pipeline testing.
-     * Real YSF framing comes later.
+     * Synthetic YSF-like bridge packet.
+     * This is NOT final Yaesu/System Fusion framing.
+     * It proves protocol regeneration and transport flow.
      */
+
+    packet.resize(40, 0);
 
     packet[0] = 'Y';
     packet[1] = 'S';
     packet[2] = 'F';
-    packet[3] = '0';
+    packet[3] = 'B'; // bridge/test marker
 
     packet[4] =
         static_cast<uint8_t>(
@@ -35,12 +34,27 @@ std::vector<uint8_t> YSFEncoder::encode(
     packet[7] =
         frame.endOfTransmission ? 1 : 0;
 
+    packet[8] = 'D';
+    packet[9] = 'S';
+    packet[10] = 'T';
+    packet[11] = 'R';
+
+    packet[12] =
+        static_cast<uint8_t>(
+            frame.payload.size() >> 8);
+
+    packet[13] =
+        static_cast<uint8_t>(
+            frame.payload.size() & 0xFF);
+
     Logger::log(INFO,
-        "YSFEncoder synthetic packet:"
+        "YSFEncoder synthetic bridge packet:"
         " STREAMID=" +
         std::to_string(frame.streamId) +
         " SEQ=" +
         std::to_string(frame.sequence) +
+        " PAYLOAD=" +
+        std::to_string(frame.payload.size()) +
         " LEN=" +
         std::to_string(packet.size()));
 
