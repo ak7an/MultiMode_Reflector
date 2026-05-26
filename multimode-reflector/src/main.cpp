@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "core/logger.h"
+#include "core/media_output_worker.h"
 #include "net/epoll_server.h"
 #include "system/timer.h"
 #include "util/config.h"
@@ -20,6 +21,8 @@ int main() {
     Logger::init("reflector.log");
 
     Logger::log(INFO, "Reflector starting...");
+
+    MediaOutputWorker::start();
 
     EpollServer server;
     server.init(cfg.getInt("port", 9000));
