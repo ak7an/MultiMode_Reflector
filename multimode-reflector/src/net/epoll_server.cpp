@@ -10,6 +10,7 @@
 #include "../protocol/protocol_interface.h"
 
 #include <unistd.h>
+#include <chrono>
 #include <fcntl.h>
 #include <cstring>
 #include <iostream>
@@ -238,6 +239,19 @@ for (const auto& media :
     if (media.protocol ==
         MediaProtocol::YSF)
     {
+        auto ageMs =
+            std::chrono::duration_cast<
+                std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() -
+                    media.createdAt).count();
+
+        Logger::log(INFO,
+            "Transcoded media age before encode:"
+            " STREAMID=" +
+            std::to_string(media.streamId) +
+            " AGE_MS=" +
+            std::to_string(ageMs));
+
         auto packet =
             ProtocolEncoder::encode(
                 media);

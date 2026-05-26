@@ -12,6 +12,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <chrono>
 
 ProtocolResult DStarProtocol::handle(
     const uint8_t* data,
@@ -114,6 +115,9 @@ ProtocolResult DStarProtocol::handle(
         media.payload.assign(
             data,
             data + length);
+
+        media.createdAt =
+            std::chrono::steady_clock::now();
 
         Logger::log(INFO,
             "MediaFrame created:"

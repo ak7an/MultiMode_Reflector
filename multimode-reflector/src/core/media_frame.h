@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <chrono>
 
 enum class MediaProtocol {
 
@@ -28,4 +29,6 @@ struct MediaFrame {
     std::string sourcePeer;
 
     std::vector<uint8_t> payload;
+
+    std::chrono::steady_clock::time_point createdAt;
 };
