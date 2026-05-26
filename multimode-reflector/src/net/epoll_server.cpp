@@ -8,6 +8,7 @@
 #include "../protocol/protocol_encoder.h"
 #include "../core/debug_udp_sender.h"
 #include "../core/media_pacer.h"
+#include "../core/media_timing.h"
 #include "../protocol/protocol_interface.h"
 
 #include <unistd.h>
@@ -255,7 +256,8 @@ for (const auto& media :
 
         MediaPacer::pace(
             media,
-            20);
+            MediaTiming::targetDelayMs(
+                media.protocol));
 
         auto packet =
             ProtocolEncoder::encode(
