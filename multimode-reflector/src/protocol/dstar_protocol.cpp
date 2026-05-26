@@ -9,6 +9,7 @@
 #include "../core/jitter_buffer.h"
 #include "../core/media_frame.h"
 #include "../core/media_router.h"
+#include "../core/media_lifecycle.h"
 
 #include <sstream>
 #include <iomanip>
@@ -242,6 +243,10 @@ ProtocolResult DStarProtocol::handle(
                 std::to_string(streamId));
 
             DStarSessionManager::endStream(
+                streamId);
+
+            MediaLifecycle::endStream(
+                MediaProtocol::YSF,
                 streamId);
         }
 

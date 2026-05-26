@@ -28,6 +28,7 @@ add_executable(reflector
     src/core/debug_udp_sender.cpp
     src/core/media_pacer.cpp
     src/core/media_timing.cpp
+    src/core/media_lifecycle.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp
