@@ -6,6 +6,7 @@
 #include "../core/config_manager.h"
 #include "../protocol/protocol_manager.h"
 #include "../protocol/protocol_encoder.h"
+#include "../core/debug_udp_sender.h"
 #include "../protocol/protocol_interface.h"
 
 #include <unistd.h>
@@ -246,6 +247,11 @@ for (const auto& media :
             " LEN=" +
             std::to_string(
                 packet.size()));
+
+        DebugUdpSender::sendToLocal(
+            packet.data(),
+            packet.size(),
+            9001);
 
         PeerManager::broadcastFrame(
             m_socket,
