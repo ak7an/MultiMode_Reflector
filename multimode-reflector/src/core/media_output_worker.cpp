@@ -60,6 +60,26 @@ void MediaOutputWorker::run()
             " SEQ=" +
             std::to_string(frame.sequence));
 
+        auto ageMs =
+            std::chrono::duration_cast<
+                std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() -
+                    frame.createdAt).count();
+
+        if (ageMs > 200) {
+
+            Logger::log(WARN,
+                "MediaOutputWorker stale drop:"
+                " STREAMID=" +
+                std::to_string(frame.streamId) +
+                " SEQ=" +
+                std::to_string(frame.sequence) +
+                " AGE_MS=" +
+                std::to_string(ageMs));
+
+            continue;
+        }
+
         MediaPacer::pace(
             frame,
             MediaTiming::targetDelayMs(
