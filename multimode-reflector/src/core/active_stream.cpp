@@ -28,6 +28,8 @@ bool ActiveStream::accept(
     {
         Logger::log(WARN,
             "ActiveStream rejected during hang time:"
+            " CALLSIGN=" +
+            frame.sourceCallsign +
             " STREAMID=" +
             std::to_string(frame.streamId));
 
@@ -50,6 +52,8 @@ bool ActiveStream::accept(
 
         Logger::log(INFO,
             "ActiveStream started:"
+            " CALLSIGN=" +
+            frame.sourceCallsign +
             " STREAMID=" +
             std::to_string(frame.streamId));
 
@@ -67,6 +71,8 @@ bool ActiveStream::accept(
         "ActiveStream rejected competing stream:"
         " ACTIVE=" +
         std::to_string(m_streamId) +
+        " REJECTED_CALLSIGN=" +
+        frame.sourceCallsign +
         " REJECTED=" +
         std::to_string(frame.streamId));
 

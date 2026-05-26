@@ -185,3 +185,17 @@ void DStarSessionManager::cleanup()
         }
     }
 }
+
+std::string DStarSessionManager::getMyCall(
+    uint16_t streamId)
+{
+    auto it =
+        m_streams.find(
+            streamId);
+
+    if (it == m_streams.end()) {
+        return "";
+    }
+
+    return it->second.mycall;
+}

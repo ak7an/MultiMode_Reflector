@@ -49,7 +49,22 @@ int main()
         "KD0CVD  ";
 
     std::memcpy(
-        &header[20],
+        &header[18],
+        "CQCQCQ  ",
+        8);
+
+    std::memcpy(
+        &header[26],
+        "AK7AN B ",
+        8);
+
+    std::memcpy(
+        &header[34],
+        "AK7AN G ",
+        8);
+
+    std::memcpy(
+        &header[42],
         mycall,
         8);
 

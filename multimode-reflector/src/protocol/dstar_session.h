@@ -40,6 +40,9 @@ public:
     static std::string getStreamPeer(
         uint16_t streamId);
 
+    static std::string getMyCall(
+        uint16_t streamId);
+
     static void touchStream(
         uint16_t streamId);
 

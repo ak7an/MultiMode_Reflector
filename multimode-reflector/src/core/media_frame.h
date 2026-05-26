@@ -22,6 +22,8 @@ struct MediaFrame {
 
     uint16_t streamId;
 
+    std::string sourceCallsign;
+
     uint8_t sequence;
 
     bool endOfTransmission;

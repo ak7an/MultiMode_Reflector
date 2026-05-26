@@ -131,6 +131,10 @@ ProtocolResult DStarProtocol::handle(
             " EOT=" +
             std::to_string(media.endOfTransmission));
 
+        media.sourceCallsign =
+            DStarSessionManager::getMyCall(
+                streamId);
+
         if (!ActiveStream::accept(
                 media))
         {
