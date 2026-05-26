@@ -5,10 +5,6 @@
 #include "../core/logger.h"
 #include "../core/config_manager.h"
 #include "../protocol/protocol_manager.h"
-#include "../protocol/protocol_encoder.h"
-#include "../core/debug_udp_sender.h"
-#include "../core/media_pacer.h"
-#include "../core/media_timing.h"
 #include "../core/media_output_queue.h"
 #include "../protocol/protocol_interface.h"
 
