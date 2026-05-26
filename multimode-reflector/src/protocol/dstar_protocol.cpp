@@ -135,9 +135,6 @@ ProtocolResult DStarProtocol::handle(
 
         result.destinations =
             routeResult.destinations;
-        result.transcodedFrames =
-            routeResult.transcodedFrames;
-
         if (routeResult.action ==
             RouteAction::RECORD)
         {
@@ -221,6 +218,9 @@ ProtocolResult DStarProtocol::handle(
 
             return result;
         }
+
+        result.transcodedFrames =
+            routeResult.transcodedFrames;
 
         DStarSessionManager::touchStream(
             streamId);

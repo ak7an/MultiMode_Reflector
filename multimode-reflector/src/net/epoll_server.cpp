@@ -274,6 +274,12 @@ for (const auto& media :
             packet.size(),
             9001);
 
+        if (media.endOfTransmission) {
+            MediaPacer::reset(
+                media.protocol,
+                media.streamId);
+        }
+
         PeerManager::broadcastFrame(
             m_socket,
             packet.data(),

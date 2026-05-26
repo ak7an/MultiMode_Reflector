@@ -14,6 +14,10 @@ public:
         const MediaFrame& frame,
         int intervalMs);
 
+    static void reset(
+        MediaProtocol protocol,
+        uint16_t streamId);
+
 private:
 
     static std::unordered_map<

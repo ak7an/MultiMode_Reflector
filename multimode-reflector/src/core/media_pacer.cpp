@@ -98,3 +98,26 @@ void MediaPacer::pace(
         " INTERVAL_MS=" +
         std::to_string(intervalMs));
 }
+
+void MediaPacer::reset(
+    MediaProtocol protocol,
+    uint16_t streamId)
+{
+    std::string key =
+        makeKey(
+            protocol,
+            streamId);
+
+    auto it =
+        m_nextSend.find(key);
+
+    if (it != m_nextSend.end()) {
+
+        m_nextSend.erase(it);
+
+        Logger::log(INFO,
+            "MediaPacer reset:"
+            " KEY=" +
+            key);
+    }
+}
