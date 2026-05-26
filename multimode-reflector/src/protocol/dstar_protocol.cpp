@@ -10,6 +10,7 @@
 #include "../core/media_frame.h"
 #include "../core/media_router.h"
 #include "../core/media_lifecycle.h"
+#include "../core/active_stream.h"
 
 #include <sstream>
 #include <iomanip>
@@ -130,6 +131,12 @@ ProtocolResult DStarProtocol::handle(
             " EOT=" +
             std::to_string(media.endOfTransmission));
 
+        if (!ActiveStream::accept(
+                media))
+        {
+            return result;
+        }
+
         MediaRouteResult routeResult =
             MediaRouter::route(
                 media);
@@ -247,6 +254,10 @@ ProtocolResult DStarProtocol::handle(
 
             MediaLifecycle::endStream(
                 MediaProtocol::YSF,
+                streamId);
+
+            ActiveStream::end(
+                MediaProtocol::DSTAR,
                 streamId);
         }
 
