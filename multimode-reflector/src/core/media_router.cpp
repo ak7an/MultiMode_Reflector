@@ -1,5 +1,6 @@
 #include "media_router.h"
 
+#include "transcoder.h"
 #include "logger.h"
 
 static std::string protocolToString(
@@ -71,22 +72,46 @@ MediaRouteResult MediaRouter::route(
         return result;
     }
 
-    result.action =
-        RouteAction::FORWARD;
+    if (frame.protocol ==
+        MediaProtocol::DSTAR)
+    {
+        result.action =
+            RouteAction::TRANSCODE;
 
-    result.reason =
-        "accepted";
-MediaDestination dest{};
+        result.reason =
+            "transcode-to-ysf";
 
-dest.type =
-    MediaDestinationType::ALL;
+        MediaFrame transcoded =
+            Transcoder::transcode(
+                frame,
+                MediaProtocol::YSF);
 
-dest.value =
-    "ALL";
+        Logger::log(INFO,
+            "Transcoded frame ready:"
+            " PROTO=YSF"
+            " STREAMID=" +
+            std::to_string(
+                transcoded.streamId));
+    }
+    else {
 
-result.destinations.push_back(
-    dest);
+        result.action =
+            RouteAction::FORWARD;
 
+        result.reason =
+            "accepted";
+    }
+
+    MediaDestination dest{};
+
+    dest.type =
+        MediaDestinationType::ALL;
+
+    dest.value =
+        "ALL";
+
+    result.destinations.push_back(
+        dest);
 
     Logger::log(INFO,
         "MediaRouter route:"
@@ -100,7 +125,7 @@ result.destinations.push_back(
         std::to_string(frame.endOfTransmission) +
         " RESULT=" +
         result.reason +
-    " DEST=ALL");
+        " DEST=ALL");
 
     return result;
 }

@@ -22,6 +22,7 @@ add_executable(reflector
     src/core/loop_guard.cpp 
     src/protocol/protocol_manager.cpp
     src/core/jitter_buffer.cpp
+    src/core/transcoder.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp
