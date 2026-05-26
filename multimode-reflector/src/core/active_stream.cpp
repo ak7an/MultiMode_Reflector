@@ -5,6 +5,7 @@
 bool ActiveStream::m_active = false;
 MediaProtocol ActiveStream::m_protocol = MediaProtocol::UNKNOWN;
 uint16_t ActiveStream::m_streamId = 0;
+std::string ActiveStream::m_callsign;
 
 std::chrono::steady_clock::time_point
 ActiveStream::m_startedAt;
@@ -47,6 +48,7 @@ bool ActiveStream::accept(
         m_active = true;
         m_protocol = frame.protocol;
         m_streamId = frame.streamId;
+        m_callsign = frame.sourceCallsign;
         m_startedAt = now;
         m_lastSeen = now;
 
@@ -95,6 +97,7 @@ void ActiveStream::end(
         m_active = false;
         m_protocol = MediaProtocol::UNKNOWN;
         m_streamId = 0;
+        m_callsign.clear();
         m_startedAt =
             std::chrono::steady_clock::time_point{};
         m_lastSeen =
@@ -161,4 +164,56 @@ void ActiveStream::checkTimeout(
             m_protocol,
             m_streamId);
     }
+}
+
+
+ActiveStreamStatus ActiveStream::status()
+{
+    auto now =
+        std::chrono::steady_clock::now();
+
+    ActiveStreamStatus s{};
+
+    s.active =
+        m_active;
+
+    s.hangActive =
+        m_hangActive;
+
+    s.callsign =
+        m_callsign;
+
+    s.protocol =
+        m_protocol;
+
+    s.streamId =
+        m_streamId;
+
+    s.txAgeMs = 0;
+    s.idleAgeMs = 0;
+    s.hangRemainingMs = 0;
+
+    if (m_active) {
+
+        s.txAgeMs =
+            std::chrono::duration_cast<
+                std::chrono::milliseconds>(
+                    now - m_startedAt).count();
+
+        s.idleAgeMs =
+            std::chrono::duration_cast<
+                std::chrono::milliseconds>(
+                    now - m_lastSeen).count();
+    }
+
+    if (m_hangActive &&
+        now < m_hangUntil)
+    {
+        s.hangRemainingMs =
+            std::chrono::duration_cast<
+                std::chrono::milliseconds>(
+                    m_hangUntil - now).count();
+    }
+
+    return s;
 }

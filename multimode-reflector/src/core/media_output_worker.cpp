@@ -54,6 +54,22 @@ void MediaOutputWorker::run()
             m_idleTimeoutMs,
             m_maxTxMs);
 
+        auto status =
+            ActiveStream::status();
+
+        if (status.active) {
+            Logger::log(INFO,
+                "ActiveStream status:"
+                " CALLSIGN=" +
+                status.callsign +
+                " STREAMID=" +
+                std::to_string(status.streamId) +
+                " TX_MS=" +
+                std::to_string(status.txAgeMs) +
+                " IDLE_MS=" +
+                std::to_string(status.idleAgeMs));
+        }
+
         MediaFrame frame{};
 
         if (!MediaOutputQueue::pop(

@@ -4,6 +4,23 @@
 
 #include <chrono>
 #include <cstdint>
+#include <string>
+
+struct ActiveStreamStatus {
+
+    bool active;
+    bool hangActive;
+
+    std::string callsign;
+
+    MediaProtocol protocol;
+
+    uint16_t streamId;
+
+    long txAgeMs;
+    long idleAgeMs;
+    long hangRemainingMs;
+};
 
 class ActiveStream {
 public:
@@ -19,11 +36,14 @@ public:
         int idleTimeoutMs,
         int maxTxMs);
 
+    static ActiveStreamStatus status();
+
 private:
 
     static bool m_active;
     static MediaProtocol m_protocol;
     static uint16_t m_streamId;
+    static std::string m_callsign;
     static std::chrono::steady_clock::time_point m_startedAt;
     static std::chrono::steady_clock::time_point m_lastSeen;
 
