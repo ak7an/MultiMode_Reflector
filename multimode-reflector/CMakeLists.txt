@@ -24,6 +24,7 @@ add_executable(reflector
     src/core/jitter_buffer.cpp
     src/core/transcoder.cpp
     src/protocol/ysf_encoder.cpp
+    src/protocol/protocol_encoder.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp

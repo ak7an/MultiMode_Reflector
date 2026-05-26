@@ -5,7 +5,7 @@
 #include "../core/logger.h"
 #include "../core/config_manager.h"
 #include "../protocol/protocol_manager.h"
-#include "../protocol/ysf_encoder.h"
+#include "../protocol/protocol_encoder.h"
 #include "../protocol/protocol_interface.h"
 
 #include <unistd.h>
@@ -238,7 +238,7 @@ for (const auto& media :
         MediaProtocol::YSF)
     {
         auto packet =
-            YSFEncoder::encode(
+            ProtocolEncoder::encode(
                 media);
 
         Logger::log(INFO,
