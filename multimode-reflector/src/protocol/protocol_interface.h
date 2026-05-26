@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../core/media_destination.h"
+#include "../core/media_frame.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -19,10 +20,13 @@ struct ProtocolResult {
     std::vector<ProtocolFrame> extraFrames;
 
     std::vector<MediaDestination> destinations;
+
+    std::vector<MediaFrame> transcodedFrames;
 };
 
 class ProtocolInterface {
 public:
+
     virtual ~ProtocolInterface() = default;
 
     virtual ProtocolResult handle(

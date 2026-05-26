@@ -131,6 +131,8 @@ ProtocolResult DStarProtocol::handle(
 
         result.destinations =
             routeResult.destinations;
+        result.transcodedFrames =
+            routeResult.transcodedFrames;
 
         if (routeResult.action ==
             RouteAction::RECORD)

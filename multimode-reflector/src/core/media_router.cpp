@@ -92,6 +92,9 @@ MediaRouteResult MediaRouter::route(
             " STREAMID=" +
             std::to_string(
                 transcoded.streamId));
+           
+              result.transcodedFrames.push_back(
+                  transcoded);
     }
     else {
 

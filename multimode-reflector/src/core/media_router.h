@@ -21,10 +21,11 @@ struct MediaRouteResult {
     RouteAction action;
 
     std::string reason;
+
     std::vector<MediaDestination> destinations;
 
+    std::vector<MediaFrame> transcodedFrames;
 };
-
 
 class MediaRouter {
 public:

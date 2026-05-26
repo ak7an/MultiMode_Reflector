@@ -223,6 +223,17 @@ for (const auto& frame :
         key);
 }
 
+for (const auto& media :
+     result.transcodedFrames)
+{
+    Logger::log(INFO,
+        "Transcoded media output observed:"
+        " STREAMID=" +
+        std::to_string(media.streamId) +
+        " SEQ=" +
+        std::to_string(media.sequence));
+}
+
 
 }
 
