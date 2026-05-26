@@ -17,7 +17,7 @@ int main()
          reinterpret_cast<sockaddr*>(&addr),
          sizeof(addr));
 
-    std::cout << "YSF listener on UDP 9001\n";
+    std::cout << "YSF listener on UDP 9001" << std::endl;
 
     uint8_t buffer[512];
 
@@ -48,7 +48,7 @@ int main()
                 << " ";
         }
 
-        std::cout << std::dec << "\n";
+        std::cout << std::dec << std::endl;
     }
 
     close(sock);
