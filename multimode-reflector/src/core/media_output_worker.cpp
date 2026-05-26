@@ -87,6 +87,7 @@ void MediaOutputWorker::run()
             packet.size(),
             9001);
 
+
         if (frame.endOfTransmission) {
 
             MediaPacer::reset(
