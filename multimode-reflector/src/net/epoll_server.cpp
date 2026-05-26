@@ -5,6 +5,7 @@
 #include "../core/logger.h"
 #include "../core/config_manager.h"
 #include "../protocol/protocol_manager.h"
+#include "../protocol/ysf_encoder.h"
 #include "../protocol/protocol_interface.h"
 
 #include <unistd.h>
@@ -232,6 +233,20 @@ for (const auto& media :
         std::to_string(media.streamId) +
         " SEQ=" +
         std::to_string(media.sequence));
+
+    if (media.protocol ==
+        MediaProtocol::YSF)
+    {
+        auto packet =
+            YSFEncoder::encode(
+                media);
+
+        Logger::log(INFO,
+            "Synthetic YSF packet generated:"
+            " LEN=" +
+            std::to_string(
+                packet.size()));
+    }
 }
 
 
