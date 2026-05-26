@@ -29,6 +29,7 @@ add_executable(reflector
     src/core/media_pacer.cpp
     src/core/media_timing.cpp
     src/core/media_lifecycle.cpp
+    src/core/media_output_queue.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp
