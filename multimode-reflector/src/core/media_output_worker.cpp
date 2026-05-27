@@ -7,6 +7,7 @@
 #include "media_pacer.h"
 #include "media_timing.h"
 #include "status_reporter.h"
+#include "packet_capture.h"
 
 
 static std::string frameTypeToString(
@@ -156,6 +157,10 @@ void MediaOutputWorker::run()
             "MediaOutputWorker encoded packet:"
             " LEN=" +
             std::to_string(packet.size()));
+
+        PacketCapture::record(
+            "YSF",
+            packet);
 
         DebugUdpSender::sendToLocal(
             packet.data(),
