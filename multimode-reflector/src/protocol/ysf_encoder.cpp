@@ -196,23 +196,55 @@ std::vector<uint8_t> YSFEncoder::encodeNetwork(
      * 35+   : payload
      */
 
+    auto padded =
+        [](const std::string& s,
+           size_t len)
+    {
+        std::string out = s;
+
+        if (out.size() > len)
+            out.resize(len);
+
+        while (out.size() < len)
+            out += ' ';
+
+        return out;
+    };
+
     const std::string src =
-        frame.sourceCallsign.empty()
-            ? "UNKNOWN"
-            : frame.sourceCallsign;
+        padded(
+            frame.sourceCallsign.empty()
+                ? "UNKNOWN"
+                : frame.sourceCallsign,
+            10);
 
     const std::string dst =
-        "ALL";
+        padded("ALL", 10);
 
     std::memcpy(
         &packet[9],
-        src.c_str(),
-        std::min<size_t>(10, src.size()));
+        src.data(),
+        10);
 
     std::memcpy(
         &packet[19],
-        dst.c_str(),
-        std::min<size_t>(10, dst.size()));
+        dst.data(),
+        10);
+
+    /*
+     * Minimal synthetic FICH placeholder.
+     *
+     * Real YSF uses encoded FICH bits.
+     * This reserves the region and creates
+     * deterministic structure for future
+     * interoperability work.
+     */
+    packet[29] = 0x01;
+    packet[30] = 0x00;
+    packet[31] = 0x02;
+    packet[32] = 0x00;
+    packet[33] = frame.sequence;
+    packet[34] = frame.endOfTransmission ? 1 : 0;
 
     const size_t payloadOffset = 35;
 
