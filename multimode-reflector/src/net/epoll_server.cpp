@@ -8,6 +8,7 @@
 #include "../protocol/protocol_manager.h"
 #include "../core/media_output_queue.h"
 #include "../protocol/protocol_interface.h"
+#include "../protocol/protocol_encoder_capabilities.h"
 
 #include <unistd.h>
 #include <chrono>
@@ -236,13 +237,17 @@ for (const auto& media :
         " SEQ=" +
         std::to_string(media.sequence));
 
-    if (media.protocol ==
-            MediaProtocol::YSF ||
-        media.protocol ==
-            MediaProtocol::DSTAR)
+    if (ProtocolEncoderCapabilities::canEncode(
+            media.protocol))
     {
         MediaOutputQueue::push(
             media);
+    }
+    else {
+        Logger::log(INFO,
+            "Skipping media output without encoder:"
+            " STREAMID=" +
+            std::to_string(media.streamId));
     }
 }
 

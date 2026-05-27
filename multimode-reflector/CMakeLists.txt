@@ -49,6 +49,8 @@ add_executable(reflector
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp
+    src/protocol/protocol_encoder_capabilities.cpp
+
 )
 
 install(TARGETS reflector DESTINATION /usr/bin)
