@@ -136,6 +136,34 @@ ProtocolResult DStarProtocol::handle(
             " EOT=" +
             std::to_string(media.endOfTransmission));
 
+        /*
+         * Synthetic replay/testing fallback.
+         *
+         * Real D-Star streams normally begin with
+         * a valid RF/header frame that creates
+         * the session state.
+         *
+         * Replay/synthetic captures may contain
+         * only voice frames, so create the session
+         * before routing so packet #1 has callsign
+         * identity too.
+         */
+        if (!DStarSessionManager::hasStream(
+                streamId))
+        {
+            Logger::log(INFO,
+                "Auto-creating synthetic D-Star stream: " +
+                std::to_string(streamId));
+
+            DStarSessionManager::createOrUpdate(
+                streamId,
+                peer,
+                "TEST",
+                "CQCQCQ",
+                "TEST",
+                "TEST");
+        }
+
         media.sourceCallsign =
             DStarSessionManager::getMyCall(
                 streamId);
@@ -167,31 +195,6 @@ ProtocolResult DStarProtocol::handle(
             return result;
         }
 
-        /*
-         * Synthetic replay/testing fallback.
-         *
-         * Real D-Star streams normally begin with
-         * a valid RF/header frame that creates
-         * the session state.
-         *
-         * Replay/synthetic captures may contain
-         * only voice frames.
-         */
-        if (!DStarSessionManager::hasStream(
-                streamId))
-        {
-            Logger::log(INFO,
-                "Auto-creating synthetic D-Star stream: " +
-                std::to_string(streamId));
-
-            DStarSessionManager::createOrUpdate(
-                streamId,
-                peer,
-                "TEST",
-                "CQCQCQ",
-                "TEST",
-                "TEST");
-        }
 
         if (LoopGuard::seenRecently(
                 streamId,
