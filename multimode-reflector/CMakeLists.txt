@@ -32,6 +32,7 @@ add_executable(reflector
     src/core/media_output_queue.cpp
     src/core/media_output_worker.cpp
     src/core/active_stream.cpp
+    src/core/status_reporter.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp

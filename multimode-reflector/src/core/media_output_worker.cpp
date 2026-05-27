@@ -6,6 +6,7 @@
 #include "media_output_queue.h"
 #include "media_pacer.h"
 #include "media_timing.h"
+#include "status_reporter.h"
 
 #include "../protocol/protocol_encoder.h"
 
@@ -53,6 +54,21 @@ void MediaOutputWorker::run()
         ActiveStream::checkTimeout(
             m_idleTimeoutMs,
             m_maxTxMs);
+
+        static auto lastStatus =
+            std::chrono::steady_clock::now();
+
+        auto now =
+            std::chrono::steady_clock::now();
+
+        if (std::chrono::duration_cast<
+                std::chrono::seconds>(
+                    now - lastStatus).count() >= 5)
+        {
+            StatusReporter::logActiveStream();
+
+            lastStatus = now;
+        }
 
         auto status =
             ActiveStream::status();
