@@ -13,6 +13,7 @@
 #include "protocol/protocol_manager.h"
 #include "protocol/dstar_protocol.h"
 #include "protocol/ysf_protocol.h"
+#include "protocol/dmr_protocol.h"
 #include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
 
@@ -55,6 +56,11 @@ int main() {
     ProtocolType::YSF,
     std::make_shared<
         YSFProtocol>());
+
+   ProtocolManager::registerProtocol(
+    ProtocolType::DMR,
+    std::make_shared<
+        DMRProtocol>());
 
     Timer timer;
     timer.start([&]() {
