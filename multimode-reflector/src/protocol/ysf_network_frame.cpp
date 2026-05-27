@@ -1,4 +1,5 @@
 #include "ysf_network_frame.h"
+#include "ysf_fich.h"
 
 #include <algorithm>
 #include <cstring>
@@ -93,16 +94,14 @@ YSFNetworkFrame::build(
         dst.data(),
         10);
 
-    /*
-     * Temporary synthetic FICH.
-     */
-    packet[29] = 0x01;
-    packet[30] = 0x00;
-    packet[31] = 0x02;
-    packet[32] = 0x00;
-    packet[33] = frame.sequence;
-    packet[34] =
-        frame.endOfTransmission ? 1 : 0;
+    auto fich =
+        YSFFich::build(
+            frame);
+
+    std::memcpy(
+        &packet[29],
+        fich.data(),
+        fich.size());
 
     const size_t payloadOffset = 35;
 
