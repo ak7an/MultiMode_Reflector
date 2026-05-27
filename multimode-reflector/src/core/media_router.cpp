@@ -2,6 +2,7 @@
 
 #include "transcoder.h"
 #include "logger.h"
+#include "../protocol/protocol_capabilities.h"
 
 static std::string frameTypeToString(
     MediaFrameType type)
@@ -97,6 +98,23 @@ MediaRouteResult MediaRouter::route(
     if (frame.protocol ==
         MediaProtocol::DSTAR)
     {
+        auto sourceCaps =
+            getProtocolCapabilities(
+                frame.protocol);
+
+        auto targetCaps =
+            getProtocolCapabilities(
+                MediaProtocol::YSF);
+
+        if (!sourceCaps.transcodeSource ||
+            !targetCaps.transcodeTarget)
+        {
+            result.reason =
+                "transcode capability unavailable";
+
+            return result;
+        }
+
         result.action =
             RouteAction::TRANSCODE;
 
@@ -121,6 +139,23 @@ MediaRouteResult MediaRouter::route(
     else if (frame.protocol ==
         MediaProtocol::YSF)
     {
+        auto sourceCaps =
+            getProtocolCapabilities(
+                frame.protocol);
+
+        auto targetCaps =
+            getProtocolCapabilities(
+                MediaProtocol::DSTAR);
+
+        if (!sourceCaps.transcodeSource ||
+            !targetCaps.transcodeTarget)
+        {
+            result.reason =
+                "transcode capability unavailable";
+
+            return result;
+        }
+
         result.action =
             RouteAction::TRANSCODE;
 
