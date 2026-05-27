@@ -144,6 +144,11 @@ bool YSFNetworkFrame::parse(
     frame.endOfTransmission =
         data[7] != 0;
 
+    YSFFich::parse(
+        &data[29],
+        6,
+        frame);
+
     switch (data[8]) {
 
     case 1:

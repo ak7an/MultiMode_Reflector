@@ -9,4 +9,10 @@ class YSFFich {
 public:
     static std::array<uint8_t, 6> build(
         const MediaFrame& frame);
+
+    static bool parse(
+        const uint8_t* data,
+        size_t length,
+        MediaFrame& frame);
+
 };

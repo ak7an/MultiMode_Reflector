@@ -14,3 +14,32 @@ std::array<uint8_t, 6> YSFFich::build(
 
     return fich;
 }
+
+bool YSFFich::parse(
+    const uint8_t* data,
+    size_t length,
+    MediaFrame& frame)
+{
+    if (length < 6) {
+        return false;
+    }
+
+    /*
+     * Temporary synthetic FICH parsing.
+     *
+     * Future:
+     * - frame subtype
+     * - DT/FT bits
+     * - FI/CS bits
+     * - path/routing
+     * - real bitfield decoding
+     */
+
+    frame.sequence =
+        data[4];
+
+    frame.endOfTransmission =
+        data[5] != 0;
+
+    return true;
+}
