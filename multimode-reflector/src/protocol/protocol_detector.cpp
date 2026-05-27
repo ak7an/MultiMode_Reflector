@@ -24,6 +24,13 @@ ProtocolType ProtocolDetector::detect(
         return ProtocolType::YSF;
 
     /*
+     * Synthetic YSF bridge/test packets:
+     * "YSFB"
+     */
+    if (memcmp(data, "YSFB", 4) == 0)
+        return ProtocolType::YSF;
+
+    /*
      * M17 examples:
      * "M17 "
      */
