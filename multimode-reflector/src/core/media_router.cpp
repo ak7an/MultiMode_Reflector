@@ -2,6 +2,7 @@
 
 #include "transcoder.h"
 #include "transcoding_matrix.h"
+#include "transcoding_policy.h"
 #include "logger.h"
 #include "../protocol/protocol_capabilities.h"
 
@@ -96,75 +97,40 @@ MediaRouteResult MediaRouter::route(
         return result;
     }
 
-    if (frame.protocol ==
-        MediaProtocol::DSTAR)
+
+    auto targets =
+        TranscodingPolicy::getTargets(
+            frame);
+
+    if (!targets.empty())
     {
-        if (!TranscodingMatrix::canTranscode(
-                frame.protocol,
-                MediaProtocol::YSF))
-        {
-            result.reason =
-                "transcode capability unavailable";
-
-            return result;
-        }
-
         result.action =
             RouteAction::TRANSCODE;
 
-        result.reason =
-            "transcode-to-ysf";
-
-        MediaFrame transcoded =
-            Transcoder::transcode(
-                frame,
-                MediaProtocol::YSF);
-
-        Logger::log(INFO,
-            "Transcoded frame ready:"
-            " PROTO=YSF"
-            " STREAMID=" +
-            std::to_string(
-                transcoded.streamId));
-
-        result.transcodedFrames.push_back(
-            transcoded);
-    }
-    else if (frame.protocol ==
-        MediaProtocol::YSF)
-    {
-        if (!TranscodingMatrix::canTranscode(
-                frame.protocol,
-                MediaProtocol::DSTAR))
+        for (auto target : targets)
         {
-            result.reason =
-                "transcode capability unavailable";
+            MediaFrame transcoded =
+                Transcoder::transcode(
+                    frame,
+                    target);
 
-            return result;
+            Logger::log(INFO,
+                "Transcoded frame ready:"
+                " TARGET=" +
+                protocolToString(target) +
+                " STREAMID=" +
+                std::to_string(
+                    transcoded.streamId));
+
+            result.transcodedFrames.push_back(
+                transcoded);
         }
 
-        result.action =
-            RouteAction::TRANSCODE;
-
         result.reason =
-            "transcode-to-dstar";
-
-        MediaFrame transcoded =
-            Transcoder::transcode(
-                frame,
-                MediaProtocol::DSTAR);
-
-        Logger::log(INFO,
-            "Transcoded frame ready:"
-            " PROTO=DSTAR"
-            " STREAMID=" +
-            std::to_string(
-                transcoded.streamId));
-
-        result.transcodedFrames.push_back(
-            transcoded);
+            "dynamic-transcode";
     }
     else {
+
 
         result.action =
             RouteAction::FORWARD;
