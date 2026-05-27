@@ -1,6 +1,7 @@
 #include "epoll_server.h"
 #include "../protocol/protocol_detector.h"
 #include "../protocol/dstar_protocol.h"
+#include "../protocol/ysf_protocol.h"
 #include "../core/peer_manager.h"
 #include "../core/logger.h"
 #include "../core/config_manager.h"

@@ -39,7 +39,9 @@ std::vector<uint8_t> YSFEncoder::encode(
      * It proves protocol regeneration and transport flow.
      */
 
-    packet.resize(40, 0);
+    packet.resize(
+        15 + frame.payload.size(),
+        0);
 
     packet[0] = 'Y';
     packet[1] = 'S';

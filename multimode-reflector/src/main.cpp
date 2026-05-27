@@ -10,6 +10,7 @@
 #include "protocol/dstar_session.h"
 #include "protocol/protocol_manager.h"
 #include "protocol/dstar_protocol.h"
+#include "protocol/ysf_protocol.h"
 #include "core/jitter_buffer.h"
 
 
@@ -33,6 +34,11 @@ int main() {
     ProtocolType::DSTAR,
     std::make_shared<
         DStarProtocol>());
+
+   ProtocolManager::registerProtocol(
+    ProtocolType::YSF,
+    std::make_shared<
+        YSFProtocol>());
 
     Timer timer;
     timer.start([&]() {
