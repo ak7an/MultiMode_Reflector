@@ -1,0 +1,120 @@
+#include "ysf_network_frame.h"
+
+#include <algorithm>
+#include <cstring>
+
+static uint8_t frameTypeCode(
+    MediaFrameType type)
+{
+    switch (type) {
+
+    case MediaFrameType::HEADER:
+        return 1;
+
+    case MediaFrameType::VOICE:
+        return 2;
+
+    case MediaFrameType::VOICE_EOT:
+        return 3;
+
+    case MediaFrameType::CONTROL:
+        return 4;
+
+    default:
+        return 0;
+    }
+}
+
+static std::string padded(
+    const std::string& s,
+    size_t len)
+{
+    std::string out = s;
+
+    if (out.size() > len)
+        out.resize(len);
+
+    while (out.size() < len)
+        out += ' ';
+
+    return out;
+}
+
+std::vector<uint8_t>
+YSFNetworkFrame::build(
+    const MediaFrame& frame)
+{
+    std::vector<uint8_t> packet(
+        155,
+        0);
+
+    packet[0] = 'Y';
+    packet[1] = 'S';
+    packet[2] = 'F';
+    packet[3] = 'D';
+
+    packet[4] =
+        static_cast<uint8_t>(
+            frame.streamId >> 8);
+
+    packet[5] =
+        static_cast<uint8_t>(
+            frame.streamId & 0xFF);
+
+    packet[6] =
+        frame.sequence;
+
+    packet[7] =
+        frame.endOfTransmission ? 1 : 0;
+
+    packet[8] =
+        frameTypeCode(
+            frame.frameType);
+
+    const std::string src =
+        padded(
+            frame.sourceCallsign.empty()
+                ? "UNKNOWN"
+                : frame.sourceCallsign,
+            10);
+
+    const std::string dst =
+        padded(
+            "ALL",
+            10);
+
+    std::memcpy(
+        &packet[9],
+        src.data(),
+        10);
+
+    std::memcpy(
+        &packet[19],
+        dst.data(),
+        10);
+
+    /*
+     * Temporary synthetic FICH.
+     */
+    packet[29] = 0x01;
+    packet[30] = 0x00;
+    packet[31] = 0x02;
+    packet[32] = 0x00;
+    packet[33] = frame.sequence;
+    packet[34] =
+        frame.endOfTransmission ? 1 : 0;
+
+    const size_t payloadOffset = 35;
+
+    const size_t copyLength =
+        std::min(
+            frame.payload.size(),
+            packet.size() - payloadOffset);
+
+    std::memcpy(
+        &packet[payloadOffset],
+        frame.payload.data(),
+        copyLength);
+
+    return packet;
+}

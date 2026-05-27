@@ -1,15 +1,14 @@
 #include "ysf_encoder.h"
 
+#include "ysf_network_frame.h"
 #include "../core/logger.h"
 
 #include <sstream>
 #include <iomanip>
-#include <algorithm>
-#include <cstring>
 
 static std::string ysfFrameMode = "synthetic";
 
-static uint8_t frameTypeCode(
+static uint8_t syntheticFrameTypeCode(
     MediaFrameType type)
 {
     switch (type) {
@@ -61,12 +60,6 @@ std::vector<uint8_t> YSFEncoder::encodeSynthetic(
 {
     std::vector<uint8_t> packet;
 
-    /*
-     * Synthetic YSF-like bridge packet.
-     * This is NOT final Yaesu/System Fusion framing.
-     * It proves protocol regeneration and transport flow.
-     */
-
     packet.resize(
         15 + frame.payload.size(),
         0);
@@ -74,7 +67,7 @@ std::vector<uint8_t> YSFEncoder::encodeSynthetic(
     packet[0] = 'Y';
     packet[1] = 'S';
     packet[2] = 'F';
-    packet[3] = 'B'; // bridge/test marker
+    packet[3] = 'B';
 
     packet[4] =
         static_cast<uint8_t>(
@@ -104,22 +97,8 @@ std::vector<uint8_t> YSFEncoder::encodeSynthetic(
             frame.payload.size() & 0xFF);
 
     packet[14] =
-        frameTypeCode(
+        syntheticFrameTypeCode(
             frame.frameType);
-
-    std::ostringstream hex;
-
-    for (size_t i = 0;
-         i < packet.size();
-         ++i)
-    {
-        hex
-            << std::hex
-            << std::setw(2)
-            << std::setfill('0')
-            << static_cast<int>(packet[i])
-            << " ";
-    }
 
     Logger::log(INFO,
         "YSFEncoder synthetic bridge packet:"
@@ -132,131 +111,15 @@ std::vector<uint8_t> YSFEncoder::encodeSynthetic(
         " LEN=" +
         std::to_string(packet.size()));
 
-    Logger::log(INFO,
-        "YSF HEX: " +
-        hex.str());
-
     return packet;
 }
 
 std::vector<uint8_t> YSFEncoder::encodeNetwork(
     const MediaFrame& frame)
 {
-    /*
-     * Minimal YSF network-sized packet.
-     *
-     * This intentionally does NOT claim to be complete
-     * real Yaesu/System Fusion voice framing yet.
-     *
-     * Purpose:
-     * - move output size/layout toward real YSF network packets
-     * - preserve MediaFrame abstraction
-     * - preserve synthetic mode for regression tests
-     */
-
-    std::vector<uint8_t> packet(
-        155,
-        0);
-
-    packet[0] = 'Y';
-    packet[1] = 'S';
-    packet[2] = 'F';
-    packet[3] = 'D';
-
-    packet[4] =
-        static_cast<uint8_t>(
-            frame.streamId >> 8);
-
-    packet[5] =
-        static_cast<uint8_t>(
-            frame.streamId & 0xFF);
-
-    packet[6] =
-        frame.sequence;
-
-    packet[7] =
-        frame.endOfTransmission ? 1 : 0;
-
-    packet[8] = frameTypeCode(
-        frame.frameType);
-
-    /*
-     * Minimal YSF network structure.
-     *
-     * Layout (temporary):
-     *
-     * 0-3   : YSFD
-     * 4-5   : stream id
-     * 6     : sequence
-     * 7     : eot
-     * 8     : frame type
-     * 9-18  : source callsign
-     * 19-28 : destination
-     * 29-34 : reserved/FICH placeholder
-     * 35+   : payload
-     */
-
-    auto padded =
-        [](const std::string& s,
-           size_t len)
-    {
-        std::string out = s;
-
-        if (out.size() > len)
-            out.resize(len);
-
-        while (out.size() < len)
-            out += ' ';
-
-        return out;
-    };
-
-    const std::string src =
-        padded(
-            frame.sourceCallsign.empty()
-                ? "UNKNOWN"
-                : frame.sourceCallsign,
-            10);
-
-    const std::string dst =
-        padded("ALL", 10);
-
-    std::memcpy(
-        &packet[9],
-        src.data(),
-        10);
-
-    std::memcpy(
-        &packet[19],
-        dst.data(),
-        10);
-
-    /*
-     * Minimal synthetic FICH placeholder.
-     *
-     * Real YSF uses encoded FICH bits.
-     * This reserves the region and creates
-     * deterministic structure for future
-     * interoperability work.
-     */
-    packet[29] = 0x01;
-    packet[30] = 0x00;
-    packet[31] = 0x02;
-    packet[32] = 0x00;
-    packet[33] = frame.sequence;
-    packet[34] = frame.endOfTransmission ? 1 : 0;
-
-    const size_t payloadOffset = 35;
-
-    const size_t maxCopy =
-        std::min(
-            frame.payload.size(),
-            packet.size() - payloadOffset);
-
-    std::copy(
-        frame.payload.begin(),
-        frame.payload.begin() + maxCopy,
-        packet.begin() + payloadOffset);
+    std::vector<uint8_t> packet =
+        YSFNetworkFrame::build(
+            frame);
 
     Logger::log(INFO,
         "YSFEncoder network packet:"

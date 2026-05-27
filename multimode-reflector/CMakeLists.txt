@@ -24,6 +24,7 @@ add_executable(reflector
     src/core/jitter_buffer.cpp
     src/core/transcoder.cpp
     src/protocol/ysf_encoder.cpp
+    src/protocol/ysf_network_frame.cpp
     src/protocol/protocol_encoder.cpp
     src/core/debug_udp_sender.cpp
     src/core/media_pacer.cpp
