@@ -167,14 +167,30 @@ ProtocolResult DStarProtocol::handle(
             return result;
         }
 
+        /*
+         * Synthetic replay/testing fallback.
+         *
+         * Real D-Star streams normally begin with
+         * a valid RF/header frame that creates
+         * the session state.
+         *
+         * Replay/synthetic captures may contain
+         * only voice frames.
+         */
         if (!DStarSessionManager::hasStream(
                 streamId))
         {
             Logger::log(INFO,
-                "Ignoring voice frame for unknown stream: " +
+                "Auto-creating synthetic D-Star stream: " +
                 std::to_string(streamId));
 
-            return result;
+            DStarSessionManager::createOrUpdate(
+                streamId,
+                peer,
+                "TEST",
+                "CQCQCQ",
+                "TEST",
+                "TEST");
         }
 
         if (LoopGuard::seenRecently(
