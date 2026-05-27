@@ -1,6 +1,7 @@
 #include "media_router.h"
 
 #include "transcoder.h"
+#include "transcoding_matrix.h"
 #include "logger.h"
 #include "../protocol/protocol_capabilities.h"
 
@@ -98,16 +99,9 @@ MediaRouteResult MediaRouter::route(
     if (frame.protocol ==
         MediaProtocol::DSTAR)
     {
-        auto sourceCaps =
-            getProtocolCapabilities(
-                frame.protocol);
-
-        auto targetCaps =
-            getProtocolCapabilities(
-                MediaProtocol::YSF);
-
-        if (!sourceCaps.transcodeSource ||
-            !targetCaps.transcodeTarget)
+        if (!TranscodingMatrix::canTranscode(
+                frame.protocol,
+                MediaProtocol::YSF))
         {
             result.reason =
                 "transcode capability unavailable";
@@ -139,16 +133,9 @@ MediaRouteResult MediaRouter::route(
     else if (frame.protocol ==
         MediaProtocol::YSF)
     {
-        auto sourceCaps =
-            getProtocolCapabilities(
-                frame.protocol);
-
-        auto targetCaps =
-            getProtocolCapabilities(
-                MediaProtocol::DSTAR);
-
-        if (!sourceCaps.transcodeSource ||
-            !targetCaps.transcodeTarget)
+        if (!TranscodingMatrix::canTranscode(
+                frame.protocol,
+                MediaProtocol::DSTAR))
         {
             result.reason =
                 "transcode capability unavailable";
