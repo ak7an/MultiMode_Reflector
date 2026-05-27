@@ -8,38 +8,45 @@ https://github.com/ak7an/MultiMode_Reflector
 Active Branch:
 next-feature
 
-Last Known Good Commit:
-a8e6e47
+Latest Confirmed Commit:
+956b329 — Use D-Star network frame parser in protocol handler
+
+Recent Stable Commits:
+- f3b646f — Add DSTAR to YSF regression test
+- 4eaa89a — Add D-Star network frame shell
+- 956b329 — Use D-Star network frame parser in protocol handler
 
 ---
 
-# Project Goal
+# Current Status
 
-Build a true multi-protocol digital voice reflector/transcoding core supporting:
+The reflector is now a stable modular protocol engine with:
 
-- D-Star
-- YSF / System Fusion
-- DMR
-- P25
-- NXDN
-- M17
-- XLX-style routing
+- D-Star ingest
+- YSF ingest
+- MediaFrame abstraction
+- Bidirectional DSTAR ↔ YSF transcoding routes
+- MediaOutputQueue
+- MediaOutputWorker
+- MediaPacer
+- JitterBuffer
+- Clean shutdown handling
+- Replay tooling
+- Packet inspection tooling
+- Automated DSTAR → YSFD regression testing
 
-Core architecture is protocol-agnostic using MediaFrame abstraction.
+The current transcoder is still a stub/pass-through transcoder.
+No AMBE/vocoder conversion yet.
 
 ---
 
-# Current Architecture
-
-## Input Layer
-
-- Epoll UDP server
-- ProtocolDetector identifies incoming protocol
-- ProtocolManager dispatches to handlers
+# Major Architecture Achieved
 
 ## Media Abstraction
 
-MediaFrame contains:
+`MediaFrame` remains the central protocol-agnostic object.
+
+Contains:
 
 - protocol
 - streamId
@@ -47,206 +54,284 @@ MediaFrame contains:
 - frameType
 - endOfTransmission
 - createdAt
+- sourcePeer
+- sourceCallsign
 - payload
 
-## Routing Layer
+---
 
-MediaRouter performs:
+# YSF Protocol Stack
 
-- FORWARD
-- TRANSCODE
-- RECORD
-- DROP
+YSF is now structured into protocol layers:
 
-Currently supported transcoding routes:
+- YSFEncoder
+- YSFNetworkFrame
+- YSFFich
+- YSFFichFields
+- YSFFrameType
+- YSFFrameMapper
 
-- DSTAR -> YSF
-- YSF -> DSTAR
+## YSF Build Path
 
-## Transcoder
-
-Current transcoder is stub/pass-through only.
-
-No vocoder conversion yet.
-
-Current behavior:
-
-- copies MediaFrame
-- updates protocol
-- refreshes createdAt timestamp
-
-## Output Layer
-
-MediaOutputQueue
-→ MediaOutputWorker
-→ MediaPacer
+MediaFrame
+→ YSFNetworkFrame::build()
+→ YSFFich::build()
+→ YSFEncoder
 → ProtocolEncoder
-→ DebugUdpSender
 
-Output port configurable:
+## YSF Parse Path
 
-debug_output_port=9001
+YSFD packet
+→ YSFNetworkFrame::parse()
+→ YSFFich::parse()
+→ MediaFrame
+→ MediaRouter
 
----
+## YSF Network Packet
 
-# Current Synthetic Protocols
+Current test packet size:
 
-## Synthetic YSF
+155 bytes
 
-Magic:
-YSFB
+Current layout:
 
-Purpose:
-Synthetic bridge transport/testing only.
+0-3   : YSFD
+4-5   : stream id
+6     : sequence
+7     : eot
+8     : frame type
+9-18  : source callsign padded to 10 bytes
+19-28 : destination padded to 10 bytes
+29-34 : semantic FICH placeholder
+35+   : payload
 
-Recognized by:
-ProtocolDetector
+## Current Semantic FICH Fields
 
-Encoded by:
-YSFEncoder
+Implemented in:
 
-Parsed by:
-YSFProtocol
+- src/protocol/ysf_fich_fields.h
+- src/protocol/ysf_fich.h
+- src/protocol/ysf_fich.cpp
 
----
+Current fields:
 
-## Synthetic D-Star
+- frameInformation
+- communicationType
+- dataType
+- callMode
 
-Magic:
-DSBB
+Verified voice-frame FICH bytes:
 
-Purpose:
-Synthetic bridge transport/testing only.
+01 00 02 00 sequence eot
 
-Recognized by:
-ProtocolDetector
+Verified semantic decode:
 
-Encoded by:
-DStarEncoder
-
----
-
-# Working Features
-
-## Verified
-
-- D-Star ingest
-- YSF ingest
-- MediaFrame reconstruction
-- Bidirectional transcoding routes
-- MediaOutputQueue operation
-- Media pacing
-- Packet replay tooling
-- Packet capture tooling
-- Synthetic protocol regeneration
-- Configurable output port
+- FI = VOICE
+- DT = VOICE_FULL_RATE
+- CM = 0
 
 ---
 
-# Known Limitations
+# D-Star Protocol Stack
 
-## No real vocoder transcoding
+D-Star now includes:
 
-Current transcoder only changes protocol labels.
+- DStarNetworkFrame
 
-## No real protocol framing
+Implemented files:
 
-Current packets are synthetic transport wrappers:
+- src/protocol/dstar_network_frame.h
+- src/protocol/dstar_network_frame.cpp
 
-- YSFB
-- DSBB
+`DStarProtocol` now parses through:
 
-## Loopback recursion possible
+DStarNetworkFrame::parse()
 
-Synthetic packets can re-enter reflector if replay/output topology is incorrect.
+This replaced inline DSVT extraction logic.
 
-## No stream ownership/origin suppression yet
+D-Star encoder still needs to be refactored to use:
 
-Needed later.
+DStarNetworkFrame::build()
 
----
-
-# Important Files
-
-## Core
-
-src/core/media_router.cpp
-src/core/transcoder.cpp
-src/core/media_output_worker.cpp
-src/core/media_output_queue.cpp
-src/core/jitter_buffer.cpp
-
-## Protocol
-
-src/protocol/protocol_detector.cpp
-src/protocol/protocol_encoder.cpp
-src/protocol/dstar_protocol.cpp
-src/protocol/ysf_protocol.cpp
-src/protocol/ysf_encoder.cpp
-src/protocol/dstar_encoder.cpp
-
-## Network
-
-src/net/epoll_server.cpp
+That is the current next step.
 
 ---
 
-# Test Tools
+# Current Working Test Tools
 
-## Replay
+## Replay Tool
 
 packet_replay
 
 Usage:
 
-./packet_replay packet_capture.log 127.0.0.1 9000
+./packet_replay testdata/dstar_clean_19_replay.log 127.0.0.1 9000
 
-## Listener
+## YSF Packet Dump Tool
 
-ysf_listener
+Source:
 
-## Packet Capture
+tools/ysf_packet_dump.cpp
 
-packet_capture.log
+Local compiled helper binary:
+
+./ysf_packet_dump
+
+The binary itself should remain untracked.
+
+## Automated Regression Test
+
+Script:
+
+scripts/test_dstar_to_ysf.sh
+
+Run:
+
+./scripts/test_dstar_to_ysf.sh
+
+Expected:
+
+[PASS] DSTAR -> YSFD regression test passed
+
+Current regression verifies:
+
+- 19 replay packets transmitted
+- 19 YSFD packets generated
+- YSF packet length
+- source callsign padding
+- destination padding
+- semantic FICH decode
+- DSTAR → YSF transport integrity
 
 ---
 
-# Expected Successful Logs
+# Verified Successful Output
 
-## DSTAR -> YSF
+Most recent successful regression:
 
-Transcoder stub: FROM=DSTAR TO=YSF
+[PASS] DSTAR -> YSFD regression test passed
 
-## YSF -> DSTAR
+Verified YSFD dump:
 
-Transcoder stub: FROM=YSF TO=DSTAR
-
-## Output
-
-MediaOutputWorker encoded packet
+YSFD packet #1
+  len       : 155
+  streamId  : 4660
+  sequence  : 0
+  eot       : 0
+  frameType : 2
+  src       : [TEST      ]
+  dst       : [ALL       ]
+  src hex   : 54 45 53 54 20 20 20 20 20 20
+  dst hex   : 41 4c 4c 20 20 20 20 20 20 20
+  fich hex  : 01 00 02 00 00 00
+  fich FI   : VOICE
+  fich DT   : VOICE_FULL_RATE
+  fich CM   : 0
 
 ---
 
-# Current Next Step
+# Config State
 
-Begin replacing synthetic YSF packets with minimally valid real YSF network framing.
+Runtime config file:
 
-Priority:
+reflector.ini
 
-1. Real YSF framing
-2. Real D-Star framing
-3. Callsign/header transport
-4. Session ownership
-5. Loop suppression
-6. Real vocoder integration
+Important setting:
+
+ysf_frame_mode=network
+
+Supported values:
+
+ysf_frame_mode=synthetic
+ysf_frame_mode=network
+
+reflector.ini is runtime-local and may remain uncommitted.
+
+---
+
+# Known Limitations
+
+## No real vocoder conversion yet
+
+Current transcoder changes framing only.
+
+No AMBE conversion.
+
+## YSF FICH still semantic placeholder
+
+Structured and named, but not real Yaesu bit-level encoding yet.
+
+## D-Star build path incomplete
+
+Parse path uses:
+
+DStarNetworkFrame::parse()
+
+Encode path still needs:
+
+DStarNetworkFrame::build()
+
+## Real D-Star header transport incomplete
+
+Replay currently uses synthetic identity:
+
+TEST
+
+## Loop suppression/origin ownership incomplete
+
+Future work:
+
+- stream ownership
+- origin suppression
+- loop prevention
+- replay topology protection
 
 ---
 
 # Do Not Break
 
 - MediaFrame abstraction
-- MediaOutputQueue
-- MediaPacer timing
 - ProtocolEncoder abstraction
-- Bidirectional transcoding routes
-- Synthetic protocol test capability
+- MediaOutputQueue
+- MediaOutputWorker
+- MediaPacer timing
+- JitterBuffer
+- Synthetic YSF mode
+- Synthetic D-Star mode
+- DSTAR → YSF regression test
+- YSF packet dump tool
+- Runtime-selectable ysf_frame_mode
+
+---
+
+# Current Next Step
+
+Refactor DStarEncoder to use:
+
+DStarNetworkFrame::build()
+
+Goal:
+
+MediaFrame
+→ DStarNetworkFrame::build()
+→ DStarEncoder
+→ ProtocolEncoder
+
+This completes D-Star structural symmetry with YSF.
+
+After that:
+
+1. Add D-Star packet dump tool
+2. Add YSF → DSTAR regression test
+3. Add semantic D-Star frame mapper
+4. Add real D-Star header transport
+5. Add stream ownership/origin suppression
+6. Add real YSF FICH bit encoding
+7. Add vocoder boundary layer
+8. Begin AMBE/vocoder integration
+
+---
+
+# Fresh Chat Startup Prompt
+
+Read PROJECT_STATE.md and continue from Current Next Step. Preserve regression tests and synthetic modes.
