@@ -1,6 +1,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <memory>
+#include <csignal>
+#include <atomic>
 
 #include "core/logger.h"
 #include "core/media_output_worker.h"
@@ -11,10 +13,20 @@
 #include "protocol/protocol_manager.h"
 #include "protocol/dstar_protocol.h"
 #include "protocol/ysf_protocol.h"
+#include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
+
+static std::atomic<bool> running(true);
+
+static void handleSignal(int) {
+    running = false;
+}
 
 
 int main() {
+
+    std::signal(SIGINT, handleSignal);
+    std::signal(SIGTERM, handleSignal);
 
     Config cfg;
     cfg.load("reflector.ini");
@@ -22,6 +34,9 @@ int main() {
     Logger::init("reflector.log");
 
     Logger::log(INFO, "Reflector starting...");
+
+    YSFEncoder::setFrameMode(
+        cfg.getString("ysf_frame_mode", "synthetic"));
 
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
@@ -48,9 +63,14 @@ int main() {
         JitterBuffer::cleanup();
     });
 
-    while (true) {
+    while (running) {
         sleep(1);
     }
+
+    Logger::log(INFO, "Reflector shutting down...");
+    timer.stop();
+    MediaOutputWorker::stop();
+    sleep(1);
 
     return 0;
 }

@@ -2,6 +2,11 @@
 
 #include "../core/logger.h"
 
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
+
+static std::string ysfFrameMode = "synthetic";
 
 static uint8_t frameTypeCode(
     MediaFrameType type)
@@ -25,10 +30,32 @@ static uint8_t frameTypeCode(
     }
 }
 
-#include <sstream>
-#include <iomanip>
+void YSFEncoder::setFrameMode(
+    const std::string& mode)
+{
+    if (mode == "network") {
+        ysfFrameMode = "network";
+    }
+    else {
+        ysfFrameMode = "synthetic";
+    }
+
+    Logger::log(INFO,
+        "YSFEncoder frame mode: " +
+        ysfFrameMode);
+}
 
 std::vector<uint8_t> YSFEncoder::encode(
+    const MediaFrame& frame)
+{
+    if (ysfFrameMode == "network") {
+        return encodeNetwork(frame);
+    }
+
+    return encodeSynthetic(frame);
+}
+
+std::vector<uint8_t> YSFEncoder::encodeSynthetic(
     const MediaFrame& frame)
 {
     std::vector<uint8_t> packet;
@@ -107,6 +134,77 @@ std::vector<uint8_t> YSFEncoder::encode(
     Logger::log(INFO,
         "YSF HEX: " +
         hex.str());
+
+    return packet;
+}
+
+std::vector<uint8_t> YSFEncoder::encodeNetwork(
+    const MediaFrame& frame)
+{
+    /*
+     * Minimal YSF network-sized packet.
+     *
+     * This intentionally does NOT claim to be complete
+     * real Yaesu/System Fusion voice framing yet.
+     *
+     * Purpose:
+     * - move output size/layout toward real YSF network packets
+     * - preserve MediaFrame abstraction
+     * - preserve synthetic mode for regression tests
+     */
+
+    std::vector<uint8_t> packet(
+        155,
+        0);
+
+    packet[0] = 'Y';
+    packet[1] = 'S';
+    packet[2] = 'F';
+    packet[3] = 'D';
+
+    packet[4] =
+        static_cast<uint8_t>(
+            frame.streamId >> 8);
+
+    packet[5] =
+        static_cast<uint8_t>(
+            frame.streamId & 0xFF);
+
+    packet[6] =
+        frame.sequence;
+
+    packet[7] =
+        frame.endOfTransmission ? 1 : 0;
+
+    packet[8] = frameTypeCode(
+        frame.frameType);
+
+    /*
+     * Temporary payload staging area.
+     * Later this becomes real callsign/FICH/VCH layout.
+     */
+    const size_t payloadOffset = 35;
+
+    const size_t maxCopy =
+        std::min(
+            frame.payload.size(),
+            packet.size() - payloadOffset);
+
+    std::copy(
+        frame.payload.begin(),
+        frame.payload.begin() + maxCopy,
+        packet.begin() + payloadOffset);
+
+    Logger::log(INFO,
+        "YSFEncoder network packet:"
+        " STREAMID=" +
+        std::to_string(frame.streamId) +
+        " SEQ=" +
+        std::to_string(frame.sequence) +
+        " PAYLOAD=" +
+        std::to_string(frame.payload.size()) +
+        " LEN=" +
+        std::to_string(packet.size()));
 
     return packet;
 }
