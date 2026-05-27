@@ -42,6 +42,7 @@ add_executable(reflector
     src/protocol/dstar_network_frame.cpp
     src/protocol/protocol_capabilities.cpp
     src/core/transcoding_matrix.cpp
+    src/core/transcoding_targets.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp
