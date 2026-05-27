@@ -2,6 +2,7 @@
 
 #include "ysf_encoder.h"
 #include "dstar_encoder.h"
+#include "dmr_network_builder.h"
 #include "../core/logger.h"
 
 std::vector<uint8_t> ProtocolEncoder::encode(
@@ -18,6 +19,13 @@ std::vector<uint8_t> ProtocolEncoder::encode(
         MediaProtocol::DSTAR)
     {
         return DStarEncoder::encode(
+            frame);
+    }
+
+    if (frame.protocol ==
+        MediaProtocol::DMR)
+    {
+        return DMRNetworkBuilder::build(
             frame);
     }
 
