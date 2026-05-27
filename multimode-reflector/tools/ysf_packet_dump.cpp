@@ -22,6 +22,22 @@ static bool parseHexByte(const std::string& token, uint8_t& value) {
     return true;
 }
 
+static const char* fiName(uint8_t v) {
+    switch (v) {
+    case 0x00: return "HEADER";
+    case 0x01: return "VOICE";
+    case 0x02: return "VOICE_EOT";
+    default: return "UNKNOWN";
+    }
+}
+
+static const char* dtName(uint8_t v) {
+    switch (v) {
+    case 0x02: return "VOICE_FULL_RATE";
+    default: return "UNKNOWN";
+    }
+}
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "Usage: ysf_packet_dump <packet_capture.log>\n";
@@ -95,7 +111,12 @@ int main(int argc, char** argv) {
                       << std::setfill('0')
                       << static_cast<int>(pkt[i]) << " ";
         }
-        std::cout << std::dec << "\n\n";
+        std::cout << std::dec << "\n";
+
+        std::cout << "  fich FI   : " << fiName(pkt[29]) << "\n";
+        std::cout << "  fich DT   : " << dtName(pkt[31]) << "\n";
+        std::cout << "  fich CM   : " << static_cast<int>(pkt[32]) << "\n";
+        std::cout << "\n";
     }
 
     std::cout << "Total YSFD packets: " << count << "\n";
