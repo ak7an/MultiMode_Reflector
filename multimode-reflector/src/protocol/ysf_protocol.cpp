@@ -57,6 +57,17 @@ ProtocolResult YSFProtocol::handle(
         " SEQ=" +
         std::to_string(frame.sequence));
 
+    MediaRouteResult routeResult =
+        MediaRouter::route(
+            frame);
+
+    for (const auto& media :
+         routeResult.transcodedFrames)
+    {
+        result.transcodedFrames.push_back(
+            media);
+    }
+
     return result;
 }
 

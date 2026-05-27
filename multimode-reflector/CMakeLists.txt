@@ -35,6 +35,7 @@ add_executable(reflector
     src/core/status_reporter.cpp
     src/core/packet_capture.cpp
     src/protocol/ysf_protocol.cpp
+    src/protocol/dstar_encoder.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp

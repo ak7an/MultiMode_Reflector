@@ -3,7 +3,6 @@
 #include "transcoder.h"
 #include "logger.h"
 
-
 static std::string frameTypeToString(
     MediaFrameType type)
 {
@@ -25,7 +24,6 @@ static std::string frameTypeToString(
         return "UNKNOWN";
     }
 }
-
 
 static std::string protocolToString(
     MediaProtocol protocol)
@@ -116,9 +114,33 @@ MediaRouteResult MediaRouter::route(
             " STREAMID=" +
             std::to_string(
                 transcoded.streamId));
-           
-              result.transcodedFrames.push_back(
-                  transcoded);
+
+        result.transcodedFrames.push_back(
+            transcoded);
+    }
+    else if (frame.protocol ==
+        MediaProtocol::YSF)
+    {
+        result.action =
+            RouteAction::TRANSCODE;
+
+        result.reason =
+            "transcode-to-dstar";
+
+        MediaFrame transcoded =
+            Transcoder::transcode(
+                frame,
+                MediaProtocol::DSTAR);
+
+        Logger::log(INFO,
+            "Transcoded frame ready:"
+            " PROTO=DSTAR"
+            " STREAMID=" +
+            std::to_string(
+                transcoded.streamId));
+
+        result.transcodedFrames.push_back(
+            transcoded);
     }
     else {
 

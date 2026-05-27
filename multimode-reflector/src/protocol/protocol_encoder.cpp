@@ -1,6 +1,7 @@
 #include "protocol_encoder.h"
 
 #include "ysf_encoder.h"
+#include "dstar_encoder.h"
 #include "../core/logger.h"
 
 std::vector<uint8_t> ProtocolEncoder::encode(
@@ -10,6 +11,13 @@ std::vector<uint8_t> ProtocolEncoder::encode(
         MediaProtocol::YSF)
     {
         return YSFEncoder::encode(
+            frame);
+    }
+
+    if (frame.protocol ==
+        MediaProtocol::DSTAR)
+    {
+        return DStarEncoder::encode(
             frame);
     }
 
