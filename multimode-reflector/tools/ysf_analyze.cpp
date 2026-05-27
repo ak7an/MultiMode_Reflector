@@ -5,6 +5,29 @@
 #include <string>
 #include <vector>
 
+
+
+static std::string frameTypeName(uint8_t code)
+{
+    switch (code) {
+
+    case 1:
+        return "HEADER";
+
+    case 2:
+        return "VOICE";
+
+    case 3:
+        return "VOICE_EOT";
+
+    case 4:
+        return "CONTROL";
+
+    default:
+        return "UNKNOWN";
+    }
+}
+
 static int hexValue(char c)
 {
     if (c >= '0' && c <= '9') return c - '0';
@@ -84,7 +107,12 @@ int main(int argc, char** argv)
     std::cout << "Sequence: " << static_cast<int>(sequence) << "\n";
     std::cout << "EOT: " << (eot ? "yes" : "no") << "\n";
     std::cout << "Source marker: " << source << "\n";
+    uint8_t frameType =
+        data.size() > 14 ? data[14] : 0;
+
     std::cout << "Payload length: " << payloadLength << "\n";
+    std::cout << "Frame type: " << frameTypeName(frameType)
+              << " (" << static_cast<int>(frameType) << ")\n";
     std::cout << "Packet bytes: " << data.size() << "\n";
 
     return 0;
