@@ -3,6 +3,30 @@
 #include "transcoder.h"
 #include "logger.h"
 
+
+static std::string frameTypeToString(
+    MediaFrameType type)
+{
+    switch (type) {
+
+    case MediaFrameType::HEADER:
+        return "HEADER";
+
+    case MediaFrameType::VOICE:
+        return "VOICE";
+
+    case MediaFrameType::VOICE_EOT:
+        return "VOICE_EOT";
+
+    case MediaFrameType::CONTROL:
+        return "CONTROL";
+
+    default:
+        return "UNKNOWN";
+    }
+}
+
+
 static std::string protocolToString(
     MediaProtocol protocol)
 {
@@ -122,6 +146,8 @@ MediaRouteResult MediaRouter::route(
         protocolToString(frame.protocol) +
         " STREAMID=" +
         std::to_string(frame.streamId) +
+        " TYPE=" +
+        frameTypeToString(frame.frameType) +
         " SEQ=" +
         std::to_string(frame.sequence) +
         " EOT=" +

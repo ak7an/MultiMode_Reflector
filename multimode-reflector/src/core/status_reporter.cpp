@@ -3,6 +3,8 @@
 #include "active_stream.h"
 #include "logger.h"
 
+#include <chrono>
+
 static std::string protocolToString(
     MediaProtocol protocol)
 {
@@ -33,6 +35,21 @@ static std::string protocolToString(
 
 void StatusReporter::logActiveStream()
 {
+    static auto lastLog =
+        std::chrono::steady_clock::now();
+
+    auto now =
+        std::chrono::steady_clock::now();
+
+    if (std::chrono::duration_cast<
+            std::chrono::seconds>(
+                now - lastLog).count() < 5)
+    {
+        return;
+    }
+
+    lastLog = now;
+
     auto status =
         ActiveStream::status();
 

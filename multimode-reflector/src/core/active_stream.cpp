@@ -177,6 +177,12 @@ ActiveStreamStatus ActiveStream::status()
     s.active =
         m_active;
 
+    if (m_hangActive &&
+        now >= m_hangUntil)
+    {
+        m_hangActive = false;
+    }
+
     s.hangActive =
         m_hangActive;
 

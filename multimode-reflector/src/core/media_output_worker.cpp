@@ -8,6 +8,30 @@
 #include "media_timing.h"
 #include "status_reporter.h"
 
+
+static std::string frameTypeToString(
+    MediaFrameType type)
+{
+    switch (type) {
+
+    case MediaFrameType::HEADER:
+        return "HEADER";
+
+    case MediaFrameType::VOICE:
+        return "VOICE";
+
+    case MediaFrameType::VOICE_EOT:
+        return "VOICE_EOT";
+
+    case MediaFrameType::CONTROL:
+        return "CONTROL";
+
+    default:
+        return "UNKNOWN";
+    }
+}
+
+
 #include "../protocol/protocol_encoder.h"
 
 #include <chrono>
@@ -70,21 +94,6 @@ void MediaOutputWorker::run()
             lastStatus = now;
         }
 
-        auto status =
-            ActiveStream::status();
-
-        if (status.active) {
-            Logger::log(INFO,
-                "ActiveStream status:"
-                " CALLSIGN=" +
-                status.callsign +
-                " STREAMID=" +
-                std::to_string(status.streamId) +
-                " TX_MS=" +
-                std::to_string(status.txAgeMs) +
-                " IDLE_MS=" +
-                std::to_string(status.idleAgeMs));
-        }
 
         MediaFrame frame{};
 
@@ -99,6 +108,8 @@ void MediaOutputWorker::run()
 
         Logger::log(INFO,
             "MediaOutputWorker popped:"
+            " TYPE=" +
+            frameTypeToString(frame.frameType) +
             " STREAMID=" +
             std::to_string(frame.streamId) +
             " SEQ=" +
