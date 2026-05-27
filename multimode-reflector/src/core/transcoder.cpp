@@ -1,6 +1,7 @@
 #include "transcoder.h"
 
 #include "logger.h"
+#include <chrono>
 
 static std::string protocolToString(
     MediaProtocol protocol)
@@ -47,6 +48,9 @@ MediaFrame Transcoder::transcode(
 
     MediaFrame output =
         input;
+
+    output.createdAt =
+        std::chrono::steady_clock::now();
 
     output.protocol =
         targetProtocol;

@@ -17,6 +17,13 @@ ProtocolType ProtocolDetector::detect(
         return ProtocolType::DSTAR;
 
     /*
+     * Synthetic D-Star bridge/test packets:
+     * "DSBB"
+     */
+    if (memcmp(data, "DSBB", 4) == 0)
+        return ProtocolType::DSTAR;
+
+    /*
      * YSF examples:
      * "YSFD"
      */

@@ -41,10 +41,12 @@ static std::string frameTypeToString(
 bool MediaOutputWorker::m_running = false;
 int MediaOutputWorker::m_idleTimeoutMs = 15000;
 int MediaOutputWorker::m_maxTxMs = 180000;
+int MediaOutputWorker::m_outputPort = 9001;
 
 void MediaOutputWorker::start(
     int idleTimeoutMs,
-    int maxTxMs)
+    int maxTxMs,
+    int outputPort)
 {
     if (m_running) {
         return;
@@ -52,6 +54,8 @@ void MediaOutputWorker::start(
 
     m_idleTimeoutMs = idleTimeoutMs;
     m_maxTxMs = maxTxMs;
+    m_outputPort = outputPort;
+    m_outputPort = outputPort;
 
     m_running = true;
 
@@ -165,7 +169,7 @@ void MediaOutputWorker::run()
         DebugUdpSender::sendToLocal(
             packet.data(),
             packet.size(),
-            9001);
+            m_outputPort);
 
 
         if (frame.endOfTransmission) {

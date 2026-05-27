@@ -25,7 +25,8 @@ int main() {
 
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
-        cfg.getInt("max_tx_ms", 180000));
+        cfg.getInt("max_tx_ms", 180000),
+        cfg.getInt("debug_output_port", 9001));
 
     EpollServer server;
     server.init(cfg.getInt("port", 9000));

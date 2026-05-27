@@ -237,7 +237,9 @@ for (const auto& media :
         std::to_string(media.sequence));
 
     if (media.protocol ==
-        MediaProtocol::YSF)
+            MediaProtocol::YSF ||
+        media.protocol ==
+            MediaProtocol::DSTAR)
     {
         MediaOutputQueue::push(
             media);
