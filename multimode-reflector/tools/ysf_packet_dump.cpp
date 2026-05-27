@@ -72,7 +72,30 @@ int main(int argc, char** argv) {
         std::cout << "  frameType : " << static_cast<int>(pkt[8]) << "\n";
         std::cout << "  src       : [" << src << "]\n";
         std::cout << "  dst       : [" << dst << "]\n";
-        std::cout << "\n";
+
+        std::cout << "  src hex   : ";
+        for (int i = 9; i < 19; ++i) {
+            std::cout << std::hex << std::setw(2)
+                      << std::setfill('0')
+                      << static_cast<int>(pkt[i]) << " ";
+        }
+        std::cout << std::dec << "\n";
+
+        std::cout << "  dst hex   : ";
+        for (int i = 19; i < 29; ++i) {
+            std::cout << std::hex << std::setw(2)
+                      << std::setfill('0')
+                      << static_cast<int>(pkt[i]) << " ";
+        }
+        std::cout << std::dec << "\n";
+
+        std::cout << "  fich hex  : ";
+        for (int i = 29; i < 35; ++i) {
+            std::cout << std::hex << std::setw(2)
+                      << std::setfill('0')
+                      << static_cast<int>(pkt[i]) << " ";
+        }
+        std::cout << std::dec << "\n\n";
     }
 
     std::cout << "Total YSFD packets: " << count << "\n";
