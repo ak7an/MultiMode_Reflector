@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <cstring>
 
 static std::string ysfFrameMode = "synthetic";
 
@@ -180,9 +181,39 @@ std::vector<uint8_t> YSFEncoder::encodeNetwork(
         frame.frameType);
 
     /*
-     * Temporary payload staging area.
-     * Later this becomes real callsign/FICH/VCH layout.
+     * Minimal YSF network structure.
+     *
+     * Layout (temporary):
+     *
+     * 0-3   : YSFD
+     * 4-5   : stream id
+     * 6     : sequence
+     * 7     : eot
+     * 8     : frame type
+     * 9-18  : source callsign
+     * 19-28 : destination
+     * 29-34 : reserved/FICH placeholder
+     * 35+   : payload
      */
+
+    const std::string src =
+        frame.sourceCallsign.empty()
+            ? "UNKNOWN"
+            : frame.sourceCallsign;
+
+    const std::string dst =
+        "ALL";
+
+    std::memcpy(
+        &packet[9],
+        src.c_str(),
+        std::min<size_t>(10, src.size()));
+
+    std::memcpy(
+        &packet[19],
+        dst.c_str(),
+        std::min<size_t>(10, dst.size()));
+
     const size_t payloadOffset = 35;
 
     const size_t maxCopy =

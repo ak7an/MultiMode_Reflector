@@ -81,7 +81,13 @@ bool YSFProtocol::parseSyntheticBridge(
         return false;
     }
 
-    if (std::memcmp(data, "YSFB", 4) != 0) {
+    bool synthetic =
+        std::memcmp(data, "YSFB", 4) == 0;
+
+    bool network =
+        std::memcmp(data, "YSFD", 4) == 0;
+
+    if (!synthetic && !network) {
         return false;
     }
 
@@ -100,26 +106,41 @@ bool YSFProtocol::parseSyntheticBridge(
 
     frame.frameType =
         frameTypeFromCode(
-            data[14]);
-
-    uint16_t payloadLength =
-        (data[12] << 8) |
-         data[13];
+            data[8]);
 
     frame.payload.clear();
 
-    if (length >= 15 + payloadLength) {
+    if (synthetic) {
 
-        frame.payload.assign(
-            data + 15,
-            data + 15 + payloadLength);
+        uint16_t payloadLength =
+            (data[12] << 8) |
+             data[13];
+
+        if (length >= 15 + payloadLength) {
+
+            frame.payload.assign(
+                data + 15,
+                data + 15 + payloadLength);
+        }
+    }
+    else {
+
+        const size_t payloadOffset = 35;
+
+        if (length > payloadOffset) {
+
+            frame.payload.assign(
+                data + payloadOffset,
+                data + length);
+        }
     }
 
     frame.sourcePeer =
         peer;
 
     Logger::log(INFO,
-        "YSF synthetic bridge parsed:"
+        std::string("YSF parsed: MODE=") +
+        (synthetic ? "synthetic" : "network") +
         " STREAMID=" +
         std::to_string(frame.streamId) +
         " SEQ=" +
