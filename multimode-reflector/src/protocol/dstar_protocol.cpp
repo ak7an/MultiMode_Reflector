@@ -102,6 +102,11 @@ ProtocolResult DStarProtocol::handle(
         media.protocol =
             MediaProtocol::DSTAR;
 
+        media.frameType =
+            endOfTransmission ?
+                MediaFrameType::VOICE_EOT :
+                MediaFrameType::VOICE;
+
         media.streamId =
             streamId;
 

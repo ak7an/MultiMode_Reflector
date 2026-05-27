@@ -1,5 +1,7 @@
 #pragma once
 
+#include "media_frame_type.h"
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -19,6 +21,8 @@ enum class MediaProtocol {
 struct MediaFrame {
 
     MediaProtocol protocol;
+
+    MediaFrameType frameType;
 
     uint16_t streamId;
 
