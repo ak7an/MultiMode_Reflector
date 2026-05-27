@@ -1,6 +1,30 @@
 #include "ysf_encoder.h"
 
 #include "../core/logger.h"
+
+
+static uint8_t frameTypeCode(
+    MediaFrameType type)
+{
+    switch (type) {
+
+    case MediaFrameType::HEADER:
+        return 1;
+
+    case MediaFrameType::VOICE:
+        return 2;
+
+    case MediaFrameType::VOICE_EOT:
+        return 3;
+
+    case MediaFrameType::CONTROL:
+        return 4;
+
+    default:
+        return 0;
+    }
+}
+
 #include <sstream>
 #include <iomanip>
 
@@ -48,6 +72,10 @@ std::vector<uint8_t> YSFEncoder::encode(
     packet[13] =
         static_cast<uint8_t>(
             frame.payload.size() & 0xFF);
+
+    packet[14] =
+        frameTypeCode(
+            frame.frameType);
 
     std::ostringstream hex;
 
