@@ -39,6 +39,7 @@ add_executable(reflector
     src/core/packet_capture.cpp
     src/protocol/ysf_protocol.cpp
     src/protocol/dstar_encoder.cpp
+    src/protocol/dstar_network_frame.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp
