@@ -1,30 +1,9 @@
 #include "ysf_network_frame.h"
 #include "ysf_fich.h"
+#include "ysf_frame_mapper.h"
 
 #include <algorithm>
 #include <cstring>
-
-static uint8_t frameTypeCode(
-    MediaFrameType type)
-{
-    switch (type) {
-
-    case MediaFrameType::HEADER:
-        return 1;
-
-    case MediaFrameType::VOICE:
-        return 2;
-
-    case MediaFrameType::VOICE_EOT:
-        return 3;
-
-    case MediaFrameType::CONTROL:
-        return 4;
-
-    default:
-        return 0;
-    }
-}
 
 static std::string padded(
     const std::string& s,
@@ -69,8 +48,9 @@ YSFNetworkFrame::build(
         frame.endOfTransmission ? 1 : 0;
 
     packet[8] =
-        frameTypeCode(
-            frame.frameType);
+        static_cast<uint8_t>(
+            YSFFrameMapper::fromMedia(
+                frame.frameType));
 
     const std::string src =
         padded(
@@ -149,33 +129,10 @@ bool YSFNetworkFrame::parse(
         6,
         frame);
 
-    switch (data[8]) {
-
-    case 1:
-        frame.frameType =
-            MediaFrameType::HEADER;
-        break;
-
-    case 2:
-        frame.frameType =
-            MediaFrameType::VOICE;
-        break;
-
-    case 3:
-        frame.frameType =
-            MediaFrameType::VOICE_EOT;
-        break;
-
-    case 4:
-        frame.frameType =
-            MediaFrameType::CONTROL;
-        break;
-
-    default:
-        frame.frameType =
-            MediaFrameType::UNKNOWN;
-        break;
-    }
+    frame.frameType =
+        YSFFrameMapper::toMedia(
+            static_cast<YSFFrameType>(
+                data[8]));
 
     frame.sourceCallsign =
         std::string(
