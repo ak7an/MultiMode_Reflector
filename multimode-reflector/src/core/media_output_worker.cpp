@@ -162,8 +162,41 @@ void MediaOutputWorker::run()
             " LEN=" +
             std::to_string(packet.size()));
 
+        std::string captureProtocol =
+            "UNKNOWN";
+
+        switch (frame.protocol) {
+
+        case MediaProtocol::DSTAR:
+            captureProtocol = "DSTAR";
+            break;
+
+        case MediaProtocol::YSF:
+            captureProtocol = "YSF";
+            break;
+
+        case MediaProtocol::DMR:
+            captureProtocol = "DMR";
+            break;
+
+        case MediaProtocol::NXDN:
+            captureProtocol = "NXDN";
+            break;
+
+        case MediaProtocol::P25:
+            captureProtocol = "P25";
+            break;
+
+        case MediaProtocol::M17:
+            captureProtocol = "M17";
+            break;
+
+        default:
+            break;
+        }
+
         PacketCapture::record(
-            "YSF",
+            captureProtocol,
             packet);
 
         DebugUdpSender::sendToLocal(
