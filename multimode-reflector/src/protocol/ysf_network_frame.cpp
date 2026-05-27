@@ -118,3 +118,70 @@ YSFNetworkFrame::build(
 
     return packet;
 }
+
+bool YSFNetworkFrame::parse(
+    const uint8_t* data,
+    size_t length,
+    MediaFrame& frame)
+{
+    if (length < 35) {
+        return false;
+    }
+
+    if (std::memcmp(data, "YSFD", 4) != 0) {
+        return false;
+    }
+
+    frame.protocol =
+        MediaProtocol::YSF;
+
+    frame.streamId =
+        (data[4] << 8) |
+         data[5];
+
+    frame.sequence =
+        data[6];
+
+    frame.endOfTransmission =
+        data[7] != 0;
+
+    switch (data[8]) {
+
+    case 1:
+        frame.frameType =
+            MediaFrameType::HEADER;
+        break;
+
+    case 2:
+        frame.frameType =
+            MediaFrameType::VOICE;
+        break;
+
+    case 3:
+        frame.frameType =
+            MediaFrameType::VOICE_EOT;
+        break;
+
+    case 4:
+        frame.frameType =
+            MediaFrameType::CONTROL;
+        break;
+
+    default:
+        frame.frameType =
+            MediaFrameType::UNKNOWN;
+        break;
+    }
+
+    frame.sourceCallsign =
+        std::string(
+            reinterpret_cast<
+                const char*>(&data[9]),
+            10);
+
+    frame.payload.assign(
+        data + 35,
+        data + length);
+
+    return true;
+}

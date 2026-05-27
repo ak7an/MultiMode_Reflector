@@ -1,4 +1,5 @@
 #include "ysf_protocol.h"
+#include "ysf_network_frame.h"
 
 #include "../core/logger.h"
 #include "../core/media_router.h"
@@ -125,14 +126,10 @@ bool YSFProtocol::parseSyntheticBridge(
     }
     else {
 
-        const size_t payloadOffset = 35;
-
-        if (length > payloadOffset) {
-
-            frame.payload.assign(
-                data + payloadOffset,
-                data + length);
-        }
+        return YSFNetworkFrame::parse(
+            data,
+            length,
+            frame);
     }
 
     frame.sourcePeer =
