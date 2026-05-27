@@ -1,4 +1,5 @@
 #include "dstar_protocol.h"
+#include "dstar_network_frame.h"
 
 #include "dstar_header.h"
 #include "dstar_session.h"
@@ -87,41 +88,24 @@ ProtocolResult DStarProtocol::handle(
 
     if (length >= 15) {
 
-        uint16_t streamId =
-            (data[12] << 8) |
-             data[13];
-
-        uint8_t sequence =
-            data[14];
-
-        bool endOfTransmission =
-            (sequence & 0x40);
-
         MediaFrame media{};
 
-        media.protocol =
-            MediaProtocol::DSTAR;
+        if (!DStarNetworkFrame::parse(
+                data,
+                length,
+                media))
+        {
+            return result;
+        }
 
-        media.frameType =
-            endOfTransmission ?
-                MediaFrameType::VOICE_EOT :
-                MediaFrameType::VOICE;
+        uint16_t streamId =
+            media.streamId;
 
-        media.streamId =
-            streamId;
-
-        media.sequence =
-            sequence & 0x1F;
-
-        media.endOfTransmission =
-            endOfTransmission;
+        uint8_t sequence =
+            media.sequence;
 
         media.sourcePeer =
             peer;
-
-        media.payload.assign(
-            data,
-            data + length);
 
         media.createdAt =
             std::chrono::steady_clock::now();
@@ -270,7 +254,7 @@ ProtocolResult DStarProtocol::handle(
             " LEN=" +
             std::to_string(length));
 
-        if (endOfTransmission) {
+        if (media.endOfTransmission) {
 
             Logger::log(INFO,
                 "D-Star EOT detected:"
