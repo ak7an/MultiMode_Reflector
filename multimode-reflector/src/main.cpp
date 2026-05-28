@@ -20,6 +20,7 @@
 #include "core/jitter_buffer.h"
 #include "core/protocol_config.h"
 #include "core/protocol_ports.h"
+#include "core/xlxd_peer_config.h"
 
 static std::atomic<bool> running(true);
 
@@ -39,6 +40,22 @@ int main() {
     Logger::init("reflector.log");
 
     Logger::log(INFO, "Reflector starting...");
+    Logger::log(INFO,
+        "XLXD peer config: ENABLED=" +
+        std::to_string(
+            XLXDPeerConfig::enabled()) +
+        " REFLECTOR=" +
+        XLXDPeerConfig::reflector() +
+        " HOST=" +
+        XLXDPeerConfig::host() +
+        " PORT=" +
+        std::to_string(
+            XLXDPeerConfig::port()) +
+        " MODULE=" +
+        std::string(
+            1,
+            XLXDPeerConfig::module()));
+
 
     YSFEncoder::setFrameMode(
         cfg.getString("ysf_frame_mode", "synthetic"));
