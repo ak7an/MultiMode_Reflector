@@ -17,6 +17,7 @@
 #include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
 #include "core/protocol_config.h"
+#include "core/protocol_ports.h"
 
 static std::atomic<bool> running(true);
 
@@ -48,6 +49,15 @@ int main() {
 
     ProtocolConfig::setDMREnabled(
         cfg.getInt("dmr_enabled", 1) != 0);
+
+    ProtocolPorts::setDStarPort(
+        cfg.getInt("dstar_port", 9000));
+
+    ProtocolPorts::setYSFPort(
+        cfg.getInt("ysf_port", 42000));
+
+    ProtocolPorts::setDMRPort(
+        cfg.getInt("dmr_port", 62031));
 
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
