@@ -6,6 +6,8 @@
 
 #include "../core/logger.h"
 #include "../core/xlxd_peer_config.h"
+#include "xlxd_poll_packet.h"
+#include "global_protocol_router.h"
 
 static std::atomic<bool>
     g_running(false);
@@ -22,6 +24,19 @@ static void monitorThread()
     {
         Logger::log(INFO,
             "XLXD peer poll tick");
+
+        auto packet =
+            XLXDPollPacket::build();
+
+        auto* router =
+            GlobalProtocolRouter::router();
+
+        if (router != nullptr)
+        {
+            router->routePacket(
+                ProtocolType::DSTAR,
+                packet);
+        }
 
         std::this_thread::sleep_for(
             std::chrono::milliseconds(
