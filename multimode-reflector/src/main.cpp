@@ -10,6 +10,8 @@
 #include "net/protocol_listener_registry.h"
 #include "net/xlxd_peer_registrar.h"
 #include "net/protocol_peer_registry.h"
+#include "net/global_protocol_router.h"
+#include "net/protocol_network_router.h"
 #include "system/timer.h"
 #include "util/config.h"
 #include "protocol/dstar_session.h"
@@ -106,6 +108,13 @@ int main() {
 
     XLXDPeerRegistrar::registerConfiguredPeer(
         peerRegistry);
+
+    ProtocolNetworkRouter
+        protocolRouter(
+            peerRegistry);
+
+    GlobalProtocolRouter::setRouter(
+        &protocolRouter);
 
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
