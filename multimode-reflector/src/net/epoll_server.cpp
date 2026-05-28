@@ -99,14 +99,15 @@ void EpollServer::tick() {
     for (int i = 0; i < count; ++i) {
 
         if (events[i].data.fd == m_socket) {
-            handlePacket();
+            handlePacket(
+                events[i].data.fd);
         }
     }
 
     PeerManager::cleanupInactivePeers();
 }
 
-void EpollServer::handlePacket() {
+void EpollServer::handlePacket(int socketFd) {
 
     char buffer[2048];
 
@@ -114,7 +115,7 @@ void EpollServer::handlePacket() {
     socklen_t len = sizeof(client);
 
     ssize_t received = recvfrom(
-        m_socket,
+        socketFd,
         buffer,
         sizeof(buffer),
         0,
@@ -211,7 +212,7 @@ ProtocolResult result =
 if (result.forwardCurrent) {
 
     PeerManager::broadcastFrame(
-        m_socket,
+        socketFd,
         reinterpret_cast<uint8_t*>(buffer),
         received,
         key);
@@ -221,7 +222,7 @@ for (const auto& frame :
      result.extraFrames)
 {
     PeerManager::broadcastFrame(
-        m_socket,
+        socketFd,
         frame.payload.data(),
         frame.payload.size(),
         key);

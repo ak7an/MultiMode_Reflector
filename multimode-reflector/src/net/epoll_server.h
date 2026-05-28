@@ -28,5 +28,5 @@ private:
     std::unordered_map<std::string, ClientSession> m_sessions;
 
     std::string addrToString(const sockaddr_in& addr);
-    void handlePacket();
+    void handlePacket(int socketFd);
 };
