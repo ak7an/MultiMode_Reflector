@@ -2,6 +2,8 @@
 
 #include "active_stream.h"
 #include "debug_udp_sender.h"
+#include "../net/global_protocol_router.h"
+#include "../protocol/protocol_definitions.h"
 #include "logger.h"
 #include "media_output_queue.h"
 #include "media_pacer.h"
@@ -203,6 +205,37 @@ void MediaOutputWorker::run()
             packet.data(),
             packet.size(),
             m_outputPort);
+
+        ProtocolNetworkRouter* router =
+            GlobalProtocolRouter::router();
+
+        if (router != nullptr) {
+
+            ProtocolType targetProto =
+                ProtocolType::UNKNOWN;
+
+            switch (frame.protocol) {
+
+            case MediaProtocol::DSTAR:
+                targetProto = ProtocolType::DSTAR;
+                break;
+
+            case MediaProtocol::YSF:
+                targetProto = ProtocolType::YSF;
+                break;
+
+            case MediaProtocol::DMR:
+                targetProto = ProtocolType::DMR;
+                break;
+
+            default:
+                break;
+            }
+
+            router->routePacket(
+                targetProto,
+                packet);
+        }
 
 
         if (frame.endOfTransmission) {
