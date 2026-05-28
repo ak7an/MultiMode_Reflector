@@ -2,6 +2,7 @@
 
 #include <string>
 #include <netinet/in.h>
+#include <chrono>
 
 #include "../protocol/protocol_definitions.h"
 
@@ -15,4 +16,12 @@ struct ProtocolPeer
     int port = 0;
 
     sockaddr_in address {};
+
+    std::chrono::steady_clock::time_point
+        lastPollSent {};
+
+    std::chrono::steady_clock::time_point
+        lastPollReceived {};
+
+    bool connected = false;
 };
