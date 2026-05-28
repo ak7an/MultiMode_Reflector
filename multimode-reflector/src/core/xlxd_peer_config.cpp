@@ -58,3 +58,24 @@ char XLXDPeerConfig::module()
 
     return value[0];
 }
+
+
+int XLXDPeerConfig::pollIntervalMs()
+{
+    Config config;
+    config.load("reflector.ini");
+
+    return config.getInt(
+        "xlxd_peer_poll_interval_ms",
+        30000);
+}
+
+int XLXDPeerConfig::timeoutMs()
+{
+    Config config;
+    config.load("reflector.ini");
+
+    return config.getInt(
+        "xlxd_peer_timeout_ms",
+        90000);
+}

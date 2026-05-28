@@ -15,4 +15,8 @@ public:
     static int port();
 
     static char module();
+
+    static int pollIntervalMs();
+
+    static int timeoutMs();
 };
