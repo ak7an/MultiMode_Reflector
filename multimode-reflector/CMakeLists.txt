@@ -57,6 +57,7 @@ add_executable(reflector
     src/core/media_router.cpp
     src/core/protocol_config.cpp
     src/core/protocol_ports.cpp
+    src/core/xlxd_peer_config.cpp
     src/protocol/protocol_encoder_capabilities.cpp
     src/protocol/dmr_network_builder.cpp
 
