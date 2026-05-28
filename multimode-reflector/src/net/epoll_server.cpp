@@ -10,6 +10,7 @@
 #include "../core/media_output_queue.h"
 #include "../protocol/protocol_interface.h"
 #include "../protocol/protocol_encoder_capabilities.h"
+#include "../protocol/protocol_name.h"
 
 #include <unistd.h>
 #include <chrono>
@@ -167,6 +168,10 @@ PeerManager::updateActivity(
 
     m_sessions[key].packets++;
 
+ListenerSocket* listener =
+    findListener(
+        socketFd);
+
 ProtocolType proto =
     ProtocolDetector::detect(
         reinterpret_cast<uint8_t*>(buffer),
@@ -208,9 +213,21 @@ switch (proto) {
         break;
 }
 
+std::string listenerInfo =
+    "unknown";
+
+if (listener) {
+    listenerInfo =
+        ProtocolName::toString(listener->protocol) +
+        ":" +
+        std::to_string(listener->port);
+}
+
 Logger::log(INFO,
     "Packet received from " +
     key +
+    " listener=" +
+    listenerInfo +
     " proto=" +
     protoName +
     " size=" +
