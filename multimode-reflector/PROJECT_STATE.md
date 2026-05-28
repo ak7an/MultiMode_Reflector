@@ -9,329 +9,457 @@ Active Branch:
 next-feature
 
 Latest Confirmed Commit:
-956b329 — Use D-Star network frame parser in protocol handler
-
-Recent Stable Commits:
-- f3b646f — Add DSTAR to YSF regression test
-- 4eaa89a — Add D-Star network frame shell
-- 956b329 — Use D-Star network frame parser in protocol handler
+35aa5cd — Add DMR encoder dispatch
 
 ---
 
-# Current Status
+# Project Vision
 
-The reflector is now a stable modular protocol engine with:
+Build a:
 
-- D-Star ingest
-- YSF ingest
+- single-module
+- multimode
+- multitranscode
+- peer-capable reflector
+
+Supporting:
+
+- D-Star
+- YSF
+- DMR
+- NXDN
+- P25
+- M17
+
+Using:
+
+- DVSI AMBE-3000 USB dongles
+- dynamic transcoding architecture
+- XLXD-compatible peering
+- DPlus / DExtra / DCS support
+- callinghome / hosts file compatibility
+
+The reflector intentionally avoids:
+
+- 26-module XLX complexity
+- oversized routing architectures
+- unnecessary operational overhead
+
+Goal:
+
+Simple operational model with powerful internal transcoding capability.
+
+---
+
+# Core Design Philosophy
+
+The reflector architecture is based on:
+
+Protocol
+→ MediaFrame abstraction
+→ Dynamic routing policy
+→ Transcoding matrix
+→ Encoder dispatch
+→ Network output
+
+Protocols should integrate horizontally without requiring router rewrites.
+
+The architecture prioritizes:
+
+- scalability
+- protocol symmetry
+- deterministic timing
+- queue stability
+- future AMBE resource management
+- clean runtime behavior
+
+---
+
+# Current Architecture
+
+Implemented core systems:
+
 - MediaFrame abstraction
-- Bidirectional DSTAR ↔ YSF transcoding routes
+- ProtocolManager
+- ProtocolDetector
+- MediaRouter
+- TranscodingPolicy
+- TranscodingTargets
+- TranscodingMatrix
 - MediaOutputQueue
 - MediaOutputWorker
 - MediaPacer
 - JitterBuffer
-- Clean shutdown handling
-- Replay tooling
-- Packet inspection tooling
-- Automated DSTAR → YSFD regression testing
-
-The current transcoder is still a stub/pass-through transcoder.
-No AMBE/vocoder conversion yet.
+- ActiveStream tracking
+- PacketCapture
+- LoopGuard
+- PeerManager
+- Dynamic encoder gating
 
 ---
 
-# Major Architecture Achieved
+# Protocol Status
 
-## Media Abstraction
+## D-Star
 
-`MediaFrame` remains the central protocol-agnostic object.
+Implemented:
 
-Contains:
+- protocol detection
+- network frame parsing
+- synthetic bridge encoder
+- network frame builder
+- MediaFrame ingest
+- DSTAR → YSF transcoding path
+- DSTAR encoder dispatch
 
-- protocol
-- streamId
-- sequence
-- frameType
-- endOfTransmission
-- createdAt
-- sourcePeer
-- sourceCallsign
-- payload
-
----
-
-# YSF Protocol Stack
-
-YSF is now structured into protocol layers:
-
-- YSFEncoder
-- YSFNetworkFrame
-- YSFFich
-- YSFFichFields
-- YSFFrameType
-- YSFFrameMapper
-
-## YSF Build Path
-
-MediaFrame
-→ YSFNetworkFrame::build()
-→ YSFFich::build()
-→ YSFEncoder
-→ ProtocolEncoder
-
-## YSF Parse Path
-
-YSFD packet
-→ YSFNetworkFrame::parse()
-→ YSFFich::parse()
-→ MediaFrame
-→ MediaRouter
-
-## YSF Network Packet
-
-Current test packet size:
-
-155 bytes
-
-Current layout:
-
-0-3   : YSFD
-4-5   : stream id
-6     : sequence
-7     : eot
-8     : frame type
-9-18  : source callsign padded to 10 bytes
-19-28 : destination padded to 10 bytes
-29-34 : semantic FICH placeholder
-35+   : payload
-
-## Current Semantic FICH Fields
-
-Implemented in:
-
-- src/protocol/ysf_fich_fields.h
-- src/protocol/ysf_fich.h
-- src/protocol/ysf_fich.cpp
-
-Current fields:
-
-- frameInformation
-- communicationType
-- dataType
-- callMode
-
-Verified voice-frame FICH bytes:
-
-01 00 02 00 sequence eot
-
-Verified semantic decode:
-
-- FI = VOICE
-- DT = VOICE_FULL_RATE
-- CM = 0
+Operational status:
+WORKING
 
 ---
 
-# D-Star Protocol Stack
+## YSF
 
-D-Star now includes:
+Implemented:
 
-- DStarNetworkFrame
+- protocol detection
+- YSFD network parsing
+- synthetic bridge parsing
+- FICH parsing/building
+- network frame builder
+- encoder dispatch
+- MediaFrame ingest
+- YSF → DSTAR transcoding path
 
-Implemented files:
-
-- src/protocol/dstar_network_frame.h
-- src/protocol/dstar_network_frame.cpp
-
-`DStarProtocol` now parses through:
-
-DStarNetworkFrame::parse()
-
-This replaced inline DSVT extraction logic.
-
-D-Star encoder still needs to be refactored to use:
-
-DStarNetworkFrame::build()
-
-That is the current next step.
+Operational status:
+WORKING
 
 ---
 
-# Current Working Test Tools
+## DMR
 
-## Replay Tool
+Implemented:
 
-packet_replay
+- protocol detection
+- protocol skeleton
+- MediaFrame parsing
+- network builder skeleton
+- encoder dispatch
+- dynamic routing integration
 
-Usage:
+Operational status:
+FRAMEWORK ONLY
 
-./packet_replay testdata/dstar_clean_19_replay.log 127.0.0.1 9000
+Current limitations:
 
-## YSF Packet Dump Tool
+- no real DMR voice handling
+- no slot handling
+- no LC parsing
+- no AMBE handling
+- no real network interoperability yet
 
-Source:
+---
 
-tools/ysf_packet_dump.cpp
+## NXDN
 
-Local compiled helper binary:
+Status:
+PLANNED
 
-./ysf_packet_dump
+---
 
-The binary itself should remain untracked.
+## P25
 
-## Automated Regression Test
+Status:
+PLANNED
+
+---
+
+## M17
+
+Status:
+PLANNED
+
+---
+
+# Current Working Features
+
+Validated working:
+
+- DSTAR ingest
+- YSF ingest
+- DMR ingest skeleton
+- DSTAR ↔ YSF transcoding pipeline
+- DMR dynamic transcoding pipeline
+- Dynamic transcoding target selection
+- Encoder capability gating
+- Protocol scalability architecture
+- Queueing/pacing framework
+- Regression testing framework
+
+---
+
+# Current Limitations
+
+Not yet implemented:
+
+- real AMBE transcoding
+- DVSI USB management
+- DMR slot handling
+- DMR LC handling
+- real DMR interoperability
+- NXDN implementation
+- P25 implementation
+- M17 implementation
+- XLXD peering
+- DPlus support
+- DExtra support
+- DCS support
+- callinghome support
+- production security hardening
+- stream arbitration
+- advanced loop prevention
+- RF edge-case handling
+
+---
+
+# Known Good Tests
+
+Validated repeatedly:
+
+## DSTAR → YSFD regression
 
 Script:
-
-scripts/test_dstar_to_ysf.sh
-
-Run:
-
 ./scripts/test_dstar_to_ysf.sh
 
-Expected:
-
-[PASS] DSTAR -> YSFD regression test passed
-
-Current regression verifies:
-
-- 19 replay packets transmitted
-- 19 YSFD packets generated
-- YSF packet length
-- source callsign padding
-- destination padding
-- semantic FICH decode
-- DSTAR → YSF transport integrity
+Result:
+PASS
 
 ---
 
-# Verified Successful Output
+## DMR ingress skeleton
 
-Most recent successful regression:
+Tool:
+./tools/send_fake_dmr.py
 
-[PASS] DSTAR -> YSFD regression test passed
+Validated:
 
-Verified YSFD dump:
+DMR detect
+→ DMR protocol dispatch
+→ MediaFrame creation
+→ dynamic routing
+→ transcoding policy
+→ DSTAR output
+→ YSF output
 
-YSFD packet #1
-  len       : 155
-  streamId  : 4660
-  sequence  : 0
-  eot       : 0
-  frameType : 2
-  src       : [TEST      ]
-  dst       : [ALL       ]
-  src hex   : 54 45 53 54 20 20 20 20 20 20
-  dst hex   : 41 4c 4c 20 20 20 20 20 20 20
-  fich hex  : 01 00 02 00 00 00
-  fich FI   : VOICE
-  fich DT   : VOICE_FULL_RATE
-  fich CM   : 0
+Result:
+PASS
 
 ---
 
-# Config State
+# Important Design Decisions
 
-Runtime config file:
+## Single Module Only
 
-reflector.ini
+The reflector intentionally remains:
 
-Important setting:
+- one module
+- one routing domain
+- one transcoding core
 
-ysf_frame_mode=network
-
-Supported values:
-
-ysf_frame_mode=synthetic
-ysf_frame_mode=network
-
-reflector.ini is runtime-local and may remain uncommitted.
+No 26-module XLX operational model.
 
 ---
 
-# Known Limitations
+## Dynamic Routing
 
-## No real vocoder conversion yet
+Routing must remain:
 
-Current transcoder changes framing only.
+- protocol-agnostic
+- policy-driven
+- matrix-driven
 
-No AMBE conversion.
+Avoid protocol-pair hardcoding.
 
-## YSF FICH still semantic placeholder
+---
 
-Structured and named, but not real Yaesu bit-level encoding yet.
+## Future AMBE Management
 
-## D-Star build path incomplete
+Current transcoder is a stub.
 
-Parse path uses:
+Future design must support:
 
-DStarNetworkFrame::parse()
-
-Encode path still needs:
-
-DStarNetworkFrame::build()
-
-## Real D-Star header transport incomplete
-
-Replay currently uses synthetic identity:
-
-TEST
-
-## Loop suppression/origin ownership incomplete
-
-Future work:
-
+- multiple DVSI dongles
+- resource allocation
+- transcoder scheduling
 - stream ownership
-- origin suppression
-- loop prevention
-- replay topology protection
+- transcoder exhaustion handling
 
 ---
 
-# Do Not Break
+# Next Priorities
 
-- MediaFrame abstraction
-- ProtocolEncoder abstraction
-- MediaOutputQueue
-- MediaOutputWorker
-- MediaPacer timing
-- JitterBuffer
-- Synthetic YSF mode
-- Synthetic D-Star mode
-- DSTAR → YSF regression test
-- YSF packet dump tool
-- Runtime-selectable ysf_frame_mode
-
----
-
-# Current Next Step
-
-Refactor DStarEncoder to use:
-
-DStarNetworkFrame::build()
-
-Goal:
-
-MediaFrame
-→ DStarNetworkFrame::build()
-→ DStarEncoder
-→ ProtocolEncoder
-
-This completes D-Star structural symmetry with YSF.
-
-After that:
-
-1. Add D-Star packet dump tool
-2. Add YSF → DSTAR regression test
-3. Add semantic D-Star frame mapper
-4. Add real D-Star header transport
-5. Add stream ownership/origin suppression
-6. Add real YSF FICH bit encoding
-7. Add vocoder boundary layer
-8. Begin AMBE/vocoder integration
+1. Real DMR frame handling
+2. AMBE transcoder architecture
+3. DVSI dongle integration
+4. XLXD peer networking
+5. DPlus support
+6. DExtra support
+7. DCS support
+8. CallingHome compatibility
+9. NXDN ingest
+10. P25 ingest
+11. M17 ingest
+12. Real RF testing
 
 ---
 
-# Fresh Chat Startup Prompt
+# Current Development Status
 
-Read PROJECT_STATE.md and continue from Current Next Step. Preserve regression tests and synthetic modes.
+Architecture maturity:
+~35%
+
+Operational maturity:
+~20%
+
+Real-world RF readiness:
+~10%
+
+Major architectural risk:
+Largely resolved
+
+Primary remaining work:
+Implementation depth and interoperability
+
+
+---
+
+# Expanded System Design Direction
+
+## Operational Philosophy
+
+The reflector is intended to become a usable standalone multimode system BEFORE optional add-ons are introduced.
+
+Core functionality should provide:
+
+- multimode protocol interoperability
+- transcoding
+- XLXD-compatible peering
+- DPlus / DExtra / DCS support
+- callinghome compatibility
+- DMR master-style operation
+- single-room operational simplicity
+
+without requiring external network dependency systems such as BrandMeister.
+
+---
+
+# DMR Design Direction
+
+DMR support is intentionally designed around:
+
+- XLX DMR Master style behavior
+- local reflector-owned routing
+- local TG/room mapping
+- no external DMR network dependency
+- no BrandMeister integration
+- no external TG routing systems
+
+DMR exists as a protocol interface to the reflector core.
+
+Architecture target:
+
+DMR repeater/hotspot/client
+→ reflector DMR master
+→ MediaFrame core
+→ multimode transcoding engine
+
+---
+
+# Configurability Goals
+
+Future operator configurability should include:
+
+- protocol enable/disable
+- configurable ports per protocol
+- non-standard port support
+- TG / room assignment
+- protocol room mapping
+- peer configuration
+- transcoding policy configuration
+
+Example future configuration concept:
+
+[Protocols]
+DSTAR=1
+YSF=1
+DMR=1
+NXDN=0
+P25=0
+M17=0
+
+[Ports]
+DSTAR=9000
+YSF=42000
+DMR=62031
+
+[Rooms]
+DefaultRoom=4000
+DMRTalkgroup=4000
+YSFRoom=4000
+
+---
+
+# Core vs Add-On Philosophy
+
+## Core Reflector Features
+
+The following are considered part of the core reflector system:
+
+- MediaFrame engine
+- transcoding engine
+- protocol stacks
+- XLXD peering
+- DPlus
+- DExtra
+- DCS
+- callinghome
+- DMR master behavior
+- dynamic routing policy
+- protocol configurability
+
+A core-only build should already be a usable operational reflector.
+
+---
+
+## Optional Add-Ons
+
+The following are considered optional deployment add-ons:
+
+- MMDVM modem attachment
+- repeater mode
+- hotspot mode
+- client mode
+- web dashboard
+- advanced monitoring
+- distributed transcoder pools
+- advanced visualization systems
+
+These should remain modular and should not complicate the core reflector architecture.
+
+---
+
+# Future Protocol Edge Model
+
+Long-term architecture direction:
+
+[ Protocol Edge ]
+        ↓
+[ MediaFrame Core ]
+        ↓
+[ Routing / Policy ]
+        ↓
+[ Transcoding ]
+        ↓
+[ Output Protocol Edge ]
+
+Protocols should behave as interchangeable edge adapters around a unified multimode transcoding core.
+
