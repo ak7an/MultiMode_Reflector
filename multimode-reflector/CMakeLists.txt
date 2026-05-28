@@ -15,6 +15,7 @@ add_executable(reflector
     src/net/protocol_listener_registry.cpp
     src/net/epoll_server.cpp 
     src/protocol/protocol_detector.cpp
+    src/protocol/protocol_name.cpp
     src/protocol/dstar_protocol.cpp
     src/protocol/dstar_header.cpp
     src/protocol/dstar_session.cpp

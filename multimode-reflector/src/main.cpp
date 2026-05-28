@@ -12,6 +12,7 @@
 #include "util/config.h"
 #include "protocol/dstar_session.h"
 #include "protocol/protocol_manager.h"
+#include "protocol/protocol_name.h"
 #include "protocol/dstar_protocol.h"
 #include "protocol/ysf_protocol.h"
 #include "protocol/dmr_protocol.h"
@@ -75,9 +76,8 @@ int main() {
         Logger::log(INFO,
             "Configured protocol listener:"
             " PROTO=" +
-            std::to_string(
-                static_cast<int>(
-                    listener.protocol)) +
+            ProtocolName::toString(
+                listener.protocol) +
             " PORT=" +
             std::to_string(
                 listener.port));
