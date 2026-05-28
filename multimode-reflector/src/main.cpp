@@ -10,6 +10,7 @@
 #include "net/protocol_listener_registry.h"
 #include "net/xlxd_peer_registrar.h"
 #include "net/xlxd_peer_monitor.h"
+#include "net/xlxd_peer_listener.h"
 #include "net/protocol_peer_registry.h"
 #include "net/global_protocol_router.h"
 #include "net/global_peer_registry.h"
@@ -123,6 +124,7 @@ int main() {
 
     if (XLXDPeerConfig::enabled())
     {
+        XLXDPeerListener::start();
         XLXDPeerMonitor::start();
     }
 
