@@ -7,6 +7,7 @@
 #include "core/logger.h"
 #include "core/media_output_worker.h"
 #include "net/epoll_server.h"
+#include "net/protocol_listener_registry.h"
 #include "system/timer.h"
 #include "util/config.h"
 #include "protocol/dstar_session.h"
@@ -67,6 +68,20 @@ int main() {
         std::to_string(ProtocolPorts::ysfPort()) +
         " DMR=" +
         std::to_string(ProtocolPorts::dmrPort()));
+
+    for (const auto& listener :
+         ProtocolListenerRegistry::listeners())
+    {
+        Logger::log(INFO,
+            "Configured protocol listener:"
+            " PROTO=" +
+            std::to_string(
+                static_cast<int>(
+                    listener.protocol)) +
+            " PORT=" +
+            std::to_string(
+                listener.port));
+    }
 
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
