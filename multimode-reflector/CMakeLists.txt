@@ -14,10 +14,14 @@ add_executable(reflector
     src/net/epoll_server.cpp
     src/net/protocol_peer_registry.cpp
     src/net/protocol_network_router.cpp
+    src/net/xlxd_peer_registrar.cpp
+    src/net/xlxd_peer_loader.cpp
     src/net/protocol_listener_registry.cpp
     src/net/epoll_server.cpp
     src/net/protocol_peer_registry.cpp
-    src/net/protocol_network_router.cpp 
+    src/net/protocol_network_router.cpp
+    src/net/xlxd_peer_registrar.cpp
+    src/net/xlxd_peer_loader.cpp 
     src/protocol/protocol_detector.cpp
     src/protocol/protocol_name.cpp
     src/protocol/dstar_protocol.cpp
