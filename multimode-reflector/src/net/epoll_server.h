@@ -2,7 +2,9 @@
 
 #include <unordered_map>
 #include <string>
+#include <vector>
 #include <netinet/in.h>
+#include "listener_socket.h"
 
 struct ClientSession {
     sockaddr_in addr;
@@ -20,6 +22,8 @@ public:
 private:
     int m_socket;
     int m_epoll;
+
+    std::vector<ListenerSocket> m_listeners;
 
     std::unordered_map<std::string, ClientSession> m_sessions;
 
