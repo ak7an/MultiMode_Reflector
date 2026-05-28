@@ -12,6 +12,7 @@ add_executable(reflector
     src/core/router.cpp
     src/core/peer_manager.cpp
     src/net/epoll_server.cpp
+    src/net/protocol_listener_registry.cpp
     src/net/epoll_server.cpp 
     src/protocol/protocol_detector.cpp
     src/protocol/dstar_protocol.cpp
