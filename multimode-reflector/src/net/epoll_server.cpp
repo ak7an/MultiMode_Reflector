@@ -38,26 +38,11 @@ EpollServer::~EpollServer() {
 
 bool EpollServer::init(int port) {
 
-    m_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    m_socket =
+        createUdpSocket(
+            port);
 
     if (m_socket < 0) {
-        Logger::log(ERROR, "Failed to create UDP socket");
-        return false;
-    }
-
-    int flags = fcntl(m_socket, F_GETFL, 0);
-    fcntl(m_socket, F_SETFL, flags | O_NONBLOCK);
-
-    sockaddr_in addr{};
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(port);
-
-    if (bind(m_socket,
-             reinterpret_cast<sockaddr*>(&addr),
-             sizeof(addr)) < 0)
-    {
-        Logger::log(ERROR, "Failed to bind UDP socket");
         return false;
     }
 
