@@ -270,3 +270,16 @@ std::string EpollServer::addrToString(const sockaddr_in& addr) {
            ":" +
            std::to_string(ntohs(addr.sin_port));
 }
+
+ListenerSocket* EpollServer::findListener(
+    int socketFd)
+{
+    for (auto& listener : m_listeners) {
+
+        if (listener.fd == socketFd) {
+            return &listener;
+        }
+    }
+
+    return nullptr;
+}

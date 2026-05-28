@@ -29,4 +29,7 @@ private:
 
     std::string addrToString(const sockaddr_in& addr);
     void handlePacket(int socketFd);
+
+    ListenerSocket* findListener(
+        int socketFd);
 };
