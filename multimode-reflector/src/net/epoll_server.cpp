@@ -303,3 +303,44 @@ ListenerSocket* EpollServer::findListener(
 
     return nullptr;
 }
+
+int EpollServer::createUdpSocket(
+    int port)
+{
+    int sockfd =
+        socket(AF_INET, SOCK_DGRAM, 0);
+
+    if (sockfd < 0) {
+        Logger::log(ERROR,
+            "Failed to create UDP socket");
+
+        return -1;
+    }
+
+    int flags =
+        fcntl(sockfd, F_GETFL, 0);
+
+    fcntl(sockfd,
+          F_SETFL,
+          flags | O_NONBLOCK);
+
+    sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(port);
+
+    if (bind(sockfd,
+             reinterpret_cast<sockaddr*>(&addr),
+             sizeof(addr)) < 0)
+    {
+        Logger::log(ERROR,
+            "Failed to bind UDP socket on port " +
+            std::to_string(port));
+
+        close(sockfd);
+
+        return -1;
+    }
+
+    return sockfd;
+}
