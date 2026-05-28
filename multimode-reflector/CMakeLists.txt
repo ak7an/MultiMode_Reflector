@@ -49,8 +49,11 @@ add_executable(reflector
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp
+    src/core/protocol_config.cpp
     src/protocol/protocol_encoder_capabilities.cpp
     src/protocol/dmr_network_builder.cpp
+
+
 
 )
 

@@ -16,6 +16,7 @@
 #include "protocol/dmr_protocol.h"
 #include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
+#include "core/protocol_config.h"
 
 static std::atomic<bool> running(true);
 
@@ -39,6 +40,15 @@ int main() {
     YSFEncoder::setFrameMode(
         cfg.getString("ysf_frame_mode", "synthetic"));
 
+    ProtocolConfig::setDStarEnabled(
+        cfg.getInt("dstar_enabled", 1) != 0);
+
+    ProtocolConfig::setYSFEnabled(
+        cfg.getInt("ysf_enabled", 1) != 0);
+
+    ProtocolConfig::setDMREnabled(
+        cfg.getInt("dmr_enabled", 1) != 0);
+
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
         cfg.getInt("max_tx_ms", 180000),
@@ -47,20 +57,26 @@ int main() {
     EpollServer server;
     server.init(cfg.getInt("port", 9000));
 
-   ProtocolManager::registerProtocol(
-    ProtocolType::DSTAR,
-    std::make_shared<
-        DStarProtocol>());
+   if (ProtocolConfig::dstarEnabled()) {
+       ProtocolManager::registerProtocol(
+        ProtocolType::DSTAR,
+        std::make_shared<
+            DStarProtocol>());
+   }
 
-   ProtocolManager::registerProtocol(
-    ProtocolType::YSF,
-    std::make_shared<
-        YSFProtocol>());
+   if (ProtocolConfig::ysfEnabled()) {
+       ProtocolManager::registerProtocol(
+        ProtocolType::YSF,
+        std::make_shared<
+            YSFProtocol>());
+   }
 
-   ProtocolManager::registerProtocol(
-    ProtocolType::DMR,
-    std::make_shared<
-        DMRProtocol>());
+   if (ProtocolConfig::dmrEnabled()) {
+       ProtocolManager::registerProtocol(
+        ProtocolType::DMR,
+        std::make_shared<
+            DMRProtocol>());
+   }
 
     Timer timer;
     timer.start([&]() {
