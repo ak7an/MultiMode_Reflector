@@ -38,31 +38,10 @@ EpollServer::~EpollServer() {
 
 bool EpollServer::init(int port) {
 
-    m_socket =
-        createUdpSocket(
-            port);
-
-    if (m_socket < 0) {
-        return false;
-    }
-
     m_epoll = epoll_create1(0);
 
     if (m_epoll < 0) {
         Logger::log(ERROR, "Failed to create epoll instance");
-        return false;
-    }
-
-    epoll_event ev{};
-    ev.events = EPOLLIN;
-    ev.data.fd = m_socket;
-
-    if (epoll_ctl(m_epoll,
-                  EPOLL_CTL_ADD,
-                  m_socket,
-                  &ev) < 0)
-    {
-        Logger::log(ERROR, "Failed to add socket to epoll");
         return false;
     }
 
@@ -71,18 +50,54 @@ bool EpollServer::init(int port) {
     for (const auto& configured :
          ProtocolListenerRegistry::listeners())
     {
+        int sockfd =
+            createUdpSocket(
+                configured.port);
+
+        if (sockfd < 0) {
+            return false;
+        }
+
+        epoll_event ev{};
+        ev.events = EPOLLIN;
+        ev.data.fd = sockfd;
+
+        if (epoll_ctl(m_epoll,
+                      EPOLL_CTL_ADD,
+                      sockfd,
+                      &ev) < 0)
+        {
+            Logger::log(ERROR,
+                "Failed to add protocol socket to epoll");
+
+            close(sockfd);
+
+            return false;
+        }
+
         ListenerSocket listener{};
-        listener.fd = m_socket;
+        listener.fd = sockfd;
         listener.protocol = configured.protocol;
         listener.port = configured.port;
 
         m_listeners.push_back(
             listener);
+
+        Logger::log(INFO,
+            "UDP protocol listener active:"
+            " PORT=" +
+            std::to_string(configured.port));
     }
 
-    Logger::log(INFO,
-        "UDP listener active on port " +
-        std::to_string(port));
+    if (m_listeners.empty()) {
+        Logger::log(ERROR,
+            "No protocol listeners configured");
+
+        return false;
+    }
+
+    m_socket =
+        m_listeners.front().fd;
 
     Logger::log(INFO,
         "Listener socket registry populated:"
@@ -103,10 +118,8 @@ void EpollServer::tick() {
 
     for (int i = 0; i < count; ++i) {
 
-        if (events[i].data.fd == m_socket) {
-            handlePacket(
-                events[i].data.fd);
-        }
+        handlePacket(
+            events[i].data.fd);
     }
 
     PeerManager::cleanupInactivePeers();
