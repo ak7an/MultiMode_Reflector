@@ -12,6 +12,7 @@
 #include "net/xlxd_peer_monitor.h"
 #include "net/protocol_peer_registry.h"
 #include "net/global_protocol_router.h"
+#include "net/global_peer_registry.h"
 #include "net/protocol_network_router.h"
 #include "system/timer.h"
 #include "util/config.h"
@@ -106,6 +107,9 @@ int main() {
     }
 
     ProtocolPeerRegistry peerRegistry;
+
+    GlobalPeerRegistry::setRegistry(
+        &peerRegistry);
 
     XLXDPeerRegistrar::registerConfiguredPeer(
         peerRegistry);
