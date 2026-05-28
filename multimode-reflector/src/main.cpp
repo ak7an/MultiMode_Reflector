@@ -59,6 +59,15 @@ int main() {
     ProtocolPorts::setDMRPort(
         cfg.getInt("dmr_port", 62031));
 
+    Logger::log(INFO,
+        "Protocol ports:"
+        " DSTAR=" +
+        std::to_string(ProtocolPorts::dstarPort()) +
+        " YSF=" +
+        std::to_string(ProtocolPorts::ysfPort()) +
+        " DMR=" +
+        std::to_string(ProtocolPorts::dmrPort()));
+
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
         cfg.getInt("max_tx_ms", 180000),
