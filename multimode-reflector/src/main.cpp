@@ -8,6 +8,8 @@
 #include "core/media_output_worker.h"
 #include "net/epoll_server.h"
 #include "net/protocol_listener_registry.h"
+#include "net/xlxd_peer_registrar.h"
+#include "net/protocol_peer_registry.h"
 #include "system/timer.h"
 #include "util/config.h"
 #include "protocol/dstar_session.h"
@@ -99,6 +101,11 @@ int main() {
             std::to_string(
                 listener.port));
     }
+
+    ProtocolPeerRegistry peerRegistry;
+
+    XLXDPeerRegistrar::registerConfiguredPeer(
+        peerRegistry);
 
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
