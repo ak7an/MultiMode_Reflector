@@ -6,17 +6,17 @@ void ProtocolPeerRegistry::addPeer(
     m_peers.push_back(peer);
 }
 
-std::vector<ProtocolPeer>
+std::vector<ProtocolPeer*>
 ProtocolPeerRegistry::peersForProtocol(
-    ProtocolType proto) const
+    ProtocolType proto)
 {
-    std::vector<ProtocolPeer> result;
+    std::vector<ProtocolPeer*> result;
 
-    for (const auto& peer : m_peers)
+    for (auto& peer : m_peers)
     {
         if (peer.protocol == proto)
         {
-            result.push_back(peer);
+            result.push_back(&peer);
         }
     }
 

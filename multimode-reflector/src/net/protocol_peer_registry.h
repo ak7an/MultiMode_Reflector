@@ -11,9 +11,9 @@ public:
     void addPeer(
         const ProtocolPeer& peer);
 
-    std::vector<ProtocolPeer>
+    std::vector<ProtocolPeer*>
     peersForProtocol(
-        ProtocolType proto) const;
+        ProtocolType proto);
 
 private:
 

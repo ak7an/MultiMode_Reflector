@@ -28,7 +28,7 @@ void ProtocolNetworkRouter::routePacket(
         " LEN=" +
         std::to_string(packet.size()));
 
-    for (const auto& peer : peers)
+    for (auto* peer : peers)
     {
         int sockfd =
             socket(AF_INET, SOCK_DGRAM, 0);
@@ -48,8 +48,8 @@ void ProtocolNetworkRouter::routePacket(
                 packet.size(),
                 0,
                 reinterpret_cast<const sockaddr*>(
-                    &peer.address),
-                sizeof(peer.address));
+                    &peer->address),
+                sizeof(peer->address));
 
         if (sent < 0)
         {
@@ -57,26 +57,24 @@ void ProtocolNetworkRouter::routePacket(
                 "ProtocolNetworkRouter send failed: PROTO=" +
                 ProtocolName::toString(proto) +
                 " HOST=" +
-                peer.host +
+                peer->host +
                 " PORT=" +
-                std::to_string(peer.port));
+                std::to_string(peer->port));
         }
         else
         {
-            const_cast<ProtocolPeer&>(peer)
-                .lastPollSent =
-                    std::chrono::steady_clock::now();
+            peer->lastPollSent =
+                std::chrono::steady_clock::now();
 
-            const_cast<ProtocolPeer&>(peer)
-                .connected = true;
+            peer->connected = true;
 
             Logger::log(INFO,
                 "ProtocolNetworkRouter sent: PROTO=" +
                 ProtocolName::toString(proto) +
                 " HOST=" +
-                peer.host +
+                peer->host +
                 " PORT=" +
-                std::to_string(peer.port) +
+                std::to_string(peer->port) +
                 " LEN=" +
                 std::to_string(sent));
         }
