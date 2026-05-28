@@ -15,6 +15,11 @@ public:
     peersForProtocol(
         ProtocolType proto);
 
+    void markPeerReceived(
+        ProtocolType proto,
+        const std::string& host,
+        int port);
+
 private:
 
     std::vector<ProtocolPeer> m_peers;
