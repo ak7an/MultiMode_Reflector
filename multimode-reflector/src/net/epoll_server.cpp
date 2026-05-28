@@ -1,4 +1,5 @@
 #include "epoll_server.h"
+#include "protocol_listener_registry.h"
 #include "../protocol/protocol_detector.h"
 #include "../protocol/dstar_protocol.h"
 #include "../protocol/ysf_protocol.h"
@@ -80,9 +81,28 @@ bool EpollServer::init(int port) {
         return false;
     }
 
+    m_listeners.clear();
+
+    for (const auto& configured :
+         ProtocolListenerRegistry::listeners())
+    {
+        ListenerSocket listener{};
+        listener.fd = m_socket;
+        listener.protocol = configured.protocol;
+        listener.port = configured.port;
+
+        m_listeners.push_back(
+            listener);
+    }
+
     Logger::log(INFO,
         "UDP listener active on port " +
         std::to_string(port));
+
+    Logger::log(INFO,
+        "Listener socket registry populated:"
+        " COUNT=" +
+        std::to_string(m_listeners.size()));
 
     return true;
 }
