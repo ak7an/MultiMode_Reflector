@@ -1,6 +1,7 @@
 #include "protocol_network_router.h"
 
 #include <unistd.h>
+#include <chrono>
 #include <sys/socket.h>
 
 #include "../core/logger.h"
@@ -62,6 +63,13 @@ void ProtocolNetworkRouter::routePacket(
         }
         else
         {
+            const_cast<ProtocolPeer&>(peer)
+                .lastPollSent =
+                    std::chrono::steady_clock::now();
+
+            const_cast<ProtocolPeer&>(peer)
+                .connected = true;
+
             Logger::log(INFO,
                 "ProtocolNetworkRouter sent: PROTO=" +
                 ProtocolName::toString(proto) +
