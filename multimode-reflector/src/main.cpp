@@ -9,6 +9,7 @@
 #include "net/epoll_server.h"
 #include "net/protocol_listener_registry.h"
 #include "net/xlxd_peer_registrar.h"
+#include "net/xlxd_peer_monitor.h"
 #include "net/protocol_peer_registry.h"
 #include "net/global_protocol_router.h"
 #include "net/protocol_network_router.h"
@@ -115,6 +116,11 @@ int main() {
 
     GlobalProtocolRouter::setRouter(
         &protocolRouter);
+
+    if (XLXDPeerConfig::enabled())
+    {
+        XLXDPeerMonitor::start();
+    }
 
     MediaOutputWorker::start(
         cfg.getInt("idle_timeout_ms", 15000),
