@@ -17,6 +17,7 @@ add_executable(reflector
     src/net/global_protocol_router.cpp
     src/net/xlxd_peer_registrar.cpp
     src/net/xlxd_peer_monitor.cpp
+    src/net/xlxd_poll_packet.cpp
     src/net/xlxd_peer_loader.cpp
     src/net/protocol_listener_registry.cpp
     src/net/epoll_server.cpp
@@ -25,6 +26,7 @@ add_executable(reflector
     src/net/global_protocol_router.cpp
     src/net/xlxd_peer_registrar.cpp
     src/net/xlxd_peer_monitor.cpp
+    src/net/xlxd_poll_packet.cpp
     src/net/xlxd_peer_loader.cpp 
     src/protocol/protocol_detector.cpp
     src/protocol/protocol_name.cpp
