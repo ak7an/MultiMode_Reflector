@@ -240,6 +240,15 @@ static void listenerThread()
                                 " REASON=session not established");
                         }
                     }
+                    else
+                    {
+                        Logger::log(INFO,
+                            "XLXD packet ignored: FROM=" +
+                            host + ":" +
+                            std::to_string(port) +
+                            " LEN=" +
+                            std::to_string(received));
+                    }
                 }
             }
         }
