@@ -22,6 +22,13 @@ public:
         const std::string& host,
         int port);
 
+    bool markPeerReceivedValidated(
+        ProtocolType proto,
+        const std::string& host,
+        int port,
+        const std::string& reflector,
+        char module);
+
     void updatePeerTimeouts(
         ProtocolType proto,
         int timeoutMs);

@@ -27,6 +27,12 @@ void XLXDPeerRegistrar::registerConfiguredPeer(
     peer.port =
         XLXDPeerConfig::port();
 
+    peer.reflector =
+        XLXDPeerConfig::reflector();
+
+    peer.module =
+        XLXDPeerConfig::module();
+
     peer.address.sin_family =
         AF_INET;
 

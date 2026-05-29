@@ -105,10 +105,12 @@ static void listenerThread()
 
                 if (registry != nullptr)
                 {
-                    registry->markPeerReceived(
+                    registry->markPeerReceivedValidated(
                         ProtocolType::DSTAR,
                         host,
-                        port);
+                        port,
+                        pollData.reflector,
+                        pollData.module);
                 }
             }
         }

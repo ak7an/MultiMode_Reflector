@@ -15,6 +15,10 @@ struct ProtocolPeer
 
     int port = 0;
 
+    std::string reflector;
+
+    char module = 'A';
+
     sockaddr_in address {};
 
     std::chrono::steady_clock::time_point
