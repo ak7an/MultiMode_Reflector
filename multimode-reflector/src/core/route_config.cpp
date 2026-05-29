@@ -1,28 +1,68 @@
 #include "route_config.h"
 
-std::string RouteConfig::m_sourceReflector = "XLX999";
-char RouteConfig::m_sourceModule = 'A';
+std::vector<RouteRule> RouteConfig::m_routes;
 
-bool RouteConfig::m_ysfEnabled = true;
-bool RouteConfig::m_dmrEnabled = true;
-bool RouteConfig::m_nxdnEnabled = false;
-bool RouteConfig::m_p25Enabled = false;
-bool RouteConfig::m_m17Enabled = false;
+void RouteConfig::clear()
+{
+    m_routes.clear();
+}
 
-void RouteConfig::setSourceReflector(const std::string& v) { m_sourceReflector = v; }
-void RouteConfig::setSourceModule(char v) { m_sourceModule = v; }
+void RouteConfig::addRoute(
+    const RouteRule& rule)
+{
+    m_routes.push_back(rule);
+}
 
-void RouteConfig::setYSFEnabled(bool v) { m_ysfEnabled = v; }
-void RouteConfig::setDMREnabled(bool v) { m_dmrEnabled = v; }
-void RouteConfig::setNXDNEnabled(bool v) { m_nxdnEnabled = v; }
-void RouteConfig::setP25Enabled(bool v) { m_p25Enabled = v; }
-void RouteConfig::setM17Enabled(bool v) { m_m17Enabled = v; }
+std::vector<MediaProtocol>
+RouteConfig::targetsForFrame(
+    const MediaFrame& frame)
+{
+    std::vector<MediaProtocol> targets;
 
-const std::string& RouteConfig::sourceReflector() { return m_sourceReflector; }
-char RouteConfig::sourceModule() { return m_sourceModule; }
+    if (frame.sourceReflector.empty())
+    {
+        return targets;
+    }
 
-bool RouteConfig::ysfEnabled() { return m_ysfEnabled; }
-bool RouteConfig::dmrEnabled() { return m_dmrEnabled; }
-bool RouteConfig::nxdnEnabled() { return m_nxdnEnabled; }
-bool RouteConfig::p25Enabled() { return m_p25Enabled; }
-bool RouteConfig::m17Enabled() { return m_m17Enabled; }
+    for (const auto& route : m_routes)
+    {
+        if (route.reflector != frame.sourceReflector)
+        {
+            continue;
+        }
+
+        if (route.module != frame.sourceModule)
+        {
+            continue;
+        }
+
+        if (route.ysfEnabled)
+        {
+            targets.push_back(MediaProtocol::YSF);
+        }
+
+        if (route.dmrEnabled)
+        {
+            targets.push_back(MediaProtocol::DMR);
+        }
+
+        if (route.nxdnEnabled)
+        {
+            targets.push_back(MediaProtocol::NXDN);
+        }
+
+        if (route.p25Enabled)
+        {
+            targets.push_back(MediaProtocol::P25);
+        }
+
+        if (route.m17Enabled)
+        {
+            targets.push_back(MediaProtocol::M17);
+        }
+
+        return targets;
+    }
+
+    return targets;
+}

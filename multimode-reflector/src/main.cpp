@@ -87,40 +87,54 @@ int main() {
         cfg.getInt("m17_enabled", 0) != 0);
 
 
-    RouteConfig::setSourceReflector(
+    RouteConfig::clear();
+
+    RouteRule route1;
+    route1.reflector =
         cfg.getString(
-            "route_source_reflector",
-            "XLX999"));
-
-    RouteConfig::setSourceModule(
+            "route1_reflector",
+            cfg.getString(
+                "route_source_reflector",
+                "XLX999"));
+    route1.module =
         cfg.getString(
-            "route_source_module",
-            "A")[0]);
-
-    RouteConfig::setYSFEnabled(
+            "route1_module",
+            cfg.getString(
+                "route_source_module",
+                "A"))[0];
+    route1.ysfEnabled =
         cfg.getInt(
-            "route_enable_ysf",
-            1) != 0);
-
-    RouteConfig::setDMREnabled(
+            "route1_ysf",
+            cfg.getInt(
+                "route_enable_ysf",
+                1)) != 0;
+    route1.dmrEnabled =
         cfg.getInt(
-            "route_enable_dmr",
-            1) != 0);
-
-    RouteConfig::setNXDNEnabled(
+            "route1_dmr",
+            cfg.getInt(
+                "route_enable_dmr",
+                1)) != 0;
+    route1.nxdnEnabled =
         cfg.getInt(
-            "route_enable_nxdn",
-            0) != 0);
-
-    RouteConfig::setP25Enabled(
+            "route1_nxdn",
+            cfg.getInt(
+                "route_enable_nxdn",
+                0)) != 0;
+    route1.p25Enabled =
         cfg.getInt(
-            "route_enable_p25",
-            0) != 0);
-
-    RouteConfig::setM17Enabled(
+            "route1_p25",
+            cfg.getInt(
+                "route_enable_p25",
+                0)) != 0;
+    route1.m17Enabled =
         cfg.getInt(
-            "route_enable_m17",
-            0) != 0);
+            "route1_m17",
+            cfg.getInt(
+                "route_enable_m17",
+                0)) != 0;
+
+    RouteConfig::addRoute(
+        route1);
 
     ProtocolPorts::setDStarPort(
         cfg.getInt("dstar_port", 9000));

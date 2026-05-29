@@ -33,43 +33,23 @@ static bool protocolEnabled(
     }
 }
 
-static bool routeEnabled(
-    MediaProtocol protocol)
+static bool canTranscodeTo(
+    MediaProtocol source,
+    MediaProtocol target)
 {
-    switch (protocol)
+    auto targets =
+        TranscodingTargets::getTargets(
+            source);
+
+    for (auto allowed : targets)
     {
-    case MediaProtocol::YSF:
-        return RouteConfig::ysfEnabled();
-
-    case MediaProtocol::DMR:
-        return RouteConfig::dmrEnabled();
-
-    case MediaProtocol::NXDN:
-        return RouteConfig::nxdnEnabled();
-
-    case MediaProtocol::P25:
-        return RouteConfig::p25Enabled();
-
-    case MediaProtocol::M17:
-        return RouteConfig::m17Enabled();
-
-    default:
-        return false;
-    }
-}
-
-static bool routeMatches(
-    const MediaFrame& frame)
-{
-    if (frame.sourceReflector.empty())
-    {
-        return true;
+        if (allowed == target)
+        {
+            return true;
+        }
     }
 
-    return frame.sourceReflector ==
-               RouteConfig::sourceReflector() &&
-           frame.sourceModule ==
-               RouteConfig::sourceModule();
+    return false;
 }
 
 std::vector<MediaProtocol>
@@ -78,10 +58,21 @@ TranscodingPolicy::getTargets(
 {
     std::vector<MediaProtocol> enabledTargets;
 
-    if (!routeMatches(frame))
+    auto routeTargets =
+        RouteConfig::targetsForFrame(
+            frame);
+
+    if (frame.sourceReflector.empty())
+    {
+        routeTargets =
+            TranscodingTargets::getTargets(
+                frame.protocol);
+    }
+
+    if (routeTargets.empty())
     {
         Logger::log(INFO,
-            "TranscodingPolicy route mismatch:"
+            "TranscodingPolicy no route targets:"
             " REFLECTOR=" +
             frame.sourceReflector +
             " MODULE=" +
@@ -90,14 +81,12 @@ TranscodingPolicy::getTargets(
         return enabledTargets;
     }
 
-    auto targets =
-        TranscodingTargets::getTargets(
-            frame.protocol);
-
-    for (auto target : targets)
+    for (auto target : routeTargets)
     {
         if (protocolEnabled(target) &&
-            routeEnabled(target))
+            canTranscodeTo(
+                frame.protocol,
+                target))
         {
             enabledTargets.push_back(target);
         }
