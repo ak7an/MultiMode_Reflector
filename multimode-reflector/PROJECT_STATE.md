@@ -1328,15 +1328,77 @@ Current Limitations:
 
 Next Development Phase:
 
-Protocol Codec Mapping
+Protocol Frame Construction
+
+Reality Check
+-------------
+
+The ThumbDV hardware and transcoding core are now operational.
+
+The primary remaining work is no longer codec generation.
+
+For D-Star, YSF, DMR, and NXDN, the ThumbDV architecture
+already provides the AMBE decode/encode path.
+
+The remaining challenge is constructing and parsing
+protocol-compliant network voice frames.
 
 Priority Order:
 
-1. YSF codec mapping
-2. DMR codec mapping
-3. NXDN codec mapping
-4. P25 codec mapping
+1. Real YSF frame construction
+2. Real DMR frame construction
+3. Real NXDN frame construction
+4. Real P25 frame construction
 5. M17 Codec2 integration
+
+Required Work:
+
+YSF:
+- Real FICH encoding
+- Real FICH decoding
+- Real voice frame generation
+- Real voice frame parsing
+
+DMR:
+- Real DMRD voice burst construction
+- Logical channel handling
+- Link Control generation
+- Talkgroup metadata handling
+
+NXDN:
+- Voice frame generation
+- Network frame parsing
+- Room mapping
+
+P25:
+- Voice frame generation
+- Network transport integration
+
+M17:
+- Codec2 integration
+- M17 voice frame generation
+
+Architectural Goal:
+
+Protocol Frame
+      ↓
+Voice Payload
+      ↓
+ThumbDV Decode
+      ↓
+PCM Audio Domain
+      ↓
+AudioLevelManager
+      ↓
+ThumbDV Encode
+      ↓
+Voice Payload
+      ↓
+Protocol Frame
+
+This preserves the original project vision of a
+single-module multimode reflector with a common
+audio-processing domain.
 
 Project Assessment:
 
