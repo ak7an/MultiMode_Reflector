@@ -1,6 +1,7 @@
 #include "ysf_network_frame.h"
 #include "ysf_fich.h"
 #include "ysf_frame_mapper.h"
+#include "ysf_voice_frame.h"
 
 #include <algorithm>
 #include <cstring>
@@ -85,14 +86,18 @@ YSFNetworkFrame::build(
 
     const size_t payloadOffset = 35;
 
+    std::vector<uint8_t> voicePayload =
+        YSFVoiceFrame::build(
+            frame);
+
     const size_t copyLength =
         std::min(
-            frame.payload.size(),
+            voicePayload.size(),
             packet.size() - payloadOffset);
 
     std::memcpy(
         &packet[payloadOffset],
-        frame.payload.data(),
+        voicePayload.data(),
         copyLength);
 
     return packet;
@@ -140,9 +145,8 @@ bool YSFNetworkFrame::parse(
                 const char*>(&data[9]),
             10);
 
-    frame.payload.assign(
+    return YSFVoiceFrame::parse(
         data + 35,
-        data + length);
-
-    return true;
+        length - 35,
+        frame);
 }
