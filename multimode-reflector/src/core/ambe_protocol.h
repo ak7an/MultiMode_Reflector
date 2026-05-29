@@ -3,6 +3,18 @@
 #include "codec_frame.h"
 #include "serial_port.h"
 
+#include <cstdint>
+#include <vector>
+
+struct AMBEResponse
+{
+    bool valid = false;
+
+    uint8_t command = 0;
+
+    std::vector<uint8_t> payload;
+};
+
 class AMBEProtocol
 {
 public:
@@ -29,5 +41,8 @@ private:
         std::vector<uint8_t>& response);
 
     static bool validatePacket(
+        const std::vector<uint8_t>& packet);
+
+    static AMBEResponse parseResponse(
         const std::vector<uint8_t>& packet);
 };

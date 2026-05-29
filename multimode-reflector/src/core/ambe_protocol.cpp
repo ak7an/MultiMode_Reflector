@@ -95,6 +95,41 @@ bool AMBEProtocol::validatePacket(
     return true;
 }
 
+
+AMBEResponse AMBEProtocol::parseResponse(
+    const std::vector<uint8_t>& packet)
+{
+    AMBEResponse response;
+
+    if (!validatePacket(
+            packet))
+    {
+        return response;
+    }
+
+    response.valid =
+        true;
+
+    response.command =
+        packet[3];
+
+    if (packet.size() > 4)
+    {
+        response.payload.assign(
+            packet.begin() + 4,
+            packet.end());
+    }
+
+    Logger::log(INFO,
+        "AMBEProtocol response parsed:"
+        " CMD=" +
+        std::to_string(response.command) +
+        " PAYLOAD_LEN=" +
+        std::to_string(response.payload.size()));
+
+    return response;
+}
+
 bool AMBEProtocol::probe(
     SerialPort& port)
 {
@@ -239,8 +274,11 @@ bool AMBEProtocol::readResponse(
             "AMBE RX: " +
             HexDump::toHex(response));
 
-        return validatePacket(
-            response);
+        AMBEResponse parsed =
+            parseResponse(
+                response);
+
+        return parsed.valid;
     }
 
     return false;
