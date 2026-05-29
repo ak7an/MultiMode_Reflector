@@ -123,7 +123,11 @@ void MediaOutputWorker::run()
             " STREAMID=" +
             std::to_string(frame.streamId) +
             " SEQ=" +
-            std::to_string(frame.sequence));
+            std::to_string(frame.sequence) +
+            " REFLECTOR=" +
+            frame.sourceReflector +
+            " MODULE=" +
+            std::string(1, frame.sourceModule));
 
         auto ageMs =
             std::chrono::duration_cast<
