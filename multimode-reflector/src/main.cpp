@@ -30,6 +30,7 @@
 #include "core/protocol_ports.h"
 #include "core/xlxd_peer_config.h"
 #include "core/ambe_device_manager.h"
+#include "core/audio_level_config.h"
 
 static std::atomic<bool> running(true);
 
@@ -58,6 +59,67 @@ int main() {
         cfg.getInt(
             "ambe_baud",
             460800));
+
+
+    AudioLevelConfig::setDStarGainInDb(
+        cfg.getInt(
+            "audio_dstar_gain_in",
+            16));
+
+    AudioLevelConfig::setDStarGainOutDb(
+        cfg.getInt(
+            "audio_dstar_gain_out",
+            -10));
+
+    AudioLevelConfig::setYSFGainInDb(
+        cfg.getInt(
+            "audio_ysf_gain_in",
+            -3));
+
+    AudioLevelConfig::setYSFGainOutDb(
+        cfg.getInt(
+            "audio_ysf_gain_out",
+            0));
+
+    AudioLevelConfig::setDMRGainInDb(
+        cfg.getInt(
+            "audio_dmr_gain_in",
+            -3));
+
+    AudioLevelConfig::setDMRGainOutDb(
+        cfg.getInt(
+            "audio_dmr_gain_out",
+            0));
+
+    AudioLevelConfig::setNXDNGainInDb(
+        cfg.getInt(
+            "audio_nxdn_gain_in",
+            0));
+
+    AudioLevelConfig::setNXDNGainOutDb(
+        cfg.getInt(
+            "audio_nxdn_gain_out",
+            0));
+
+    AudioLevelConfig::setP25GainInDb(
+        cfg.getInt(
+            "audio_p25_gain_in",
+            0));
+
+    AudioLevelConfig::setP25GainOutDb(
+        cfg.getInt(
+            "audio_p25_gain_out",
+            0));
+
+    AudioLevelConfig::setM17GainInDb(
+        cfg.getInt(
+            "audio_m17_gain_in",
+            0));
+
+    AudioLevelConfig::setM17GainOutDb(
+        cfg.getInt(
+            "audio_m17_gain_out",
+            0));
 
     Logger::log(INFO, "Reflector starting...");
     Logger::log(INFO,
