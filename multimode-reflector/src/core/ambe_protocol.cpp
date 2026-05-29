@@ -12,6 +12,25 @@ namespace
     constexpr uint8_t CMD_ENCODE = 0x03;
 }
 
+static std::string commandName(
+    uint8_t command)
+{
+    switch (command)
+    {
+    case CMD_PROBE:
+        return "PROBE";
+
+    case CMD_DECODE:
+        return "DECODE";
+
+    case CMD_ENCODE:
+        return "ENCODE";
+
+    default:
+        return "UNKNOWN";
+    }
+}
+
 static std::vector<uint8_t> buildPacket(
     uint8_t command,
     const std::vector<uint8_t>& payload = {})
@@ -124,6 +143,8 @@ AMBEResponse AMBEProtocol::parseResponse(
         "AMBEProtocol response parsed:"
         " CMD=" +
         std::to_string(response.command) +
+        " NAME=" +
+        commandName(response.command) +
         " PAYLOAD_LEN=" +
         std::to_string(response.payload.size()));
 
