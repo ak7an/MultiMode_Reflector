@@ -352,3 +352,112 @@ and should remain separate from media protocol ingest listeners.
 - reflector.ini
 
 ---
+
+---
+
+# Development Workflow
+
+## Current Development Method
+
+Early project development used very small incremental changes:
+
+- implement one class
+- build
+- fix compile errors
+- test
+- commit
+
+This was necessary while establishing the core architecture and resolving build-system issues.
+
+## Current Project Phase
+
+The architecture is now sufficiently stable to use larger feature batches.
+
+Preferred workflow:
+
+1. Define a complete subsystem feature.
+2. Implement the entire subsystem.
+3. Build once.
+4. Resolve compile errors.
+5. Perform a focused runtime test.
+6. Commit the complete feature.
+
+Example feature batches:
+
+- Protocol enable/disable expansion
+- XLXD peer state management
+- XLXD timeout handling
+- DPlus support
+- DExtra support
+- DCS support
+
+Avoid returning to micro-commits unless architectural uncertainty or debugging requires it.
+
+## Architectural Priority Order
+
+Before adding new protocol families:
+
+1. Stabilize D-Star
+2. Stabilize YSF
+3. Stabilize DMR
+4. Complete XLXD peering
+5. Implement reflector interoperability
+6. Integrate DVSI transcoding
+
+Only after the above are stable should development expand into:
+
+- NXDN
+- P25
+- M17
+
+## Design Philosophy
+
+The project prioritizes:
+
+- Stability over feature count
+- Low latency over architectural complexity
+- Clean layering over shortcuts
+- Deterministic behavior over maximum flexibility
+
+The goal is not to become the largest multimode reflector.
+
+The goal is to become a reliable, maintainable, low-latency multimode reflector that remains operationally simple.
+
+---
+
+# Recent Progress
+
+Latest Confirmed Commit:
+
+cc2dd60 — Document critical source files in project state
+
+Latest Development Work:
+
+- Added future protocol enable/disable framework
+- Added NXDN enable flag
+- Added P25 enable flag
+- Added M17 enable flag
+- Added runtime protocol enable status logging
+- Confirmed protocol listener creation remains driven by protocol enable state
+
+Current Runtime Verification:
+
+Protocol enabled:
+
+DSTAR=1
+YSF=1
+DMR=1
+NXDN=0
+P25=0
+M17=0
+
+This establishes the future ability to run:
+
+- DMR-only reflectors
+- P25-only reflectors
+- DMR/P25 reflectors
+- M17-only reflectors
+- Any supported protocol combination
+
+without code changes.
+
