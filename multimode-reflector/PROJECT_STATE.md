@@ -921,3 +921,132 @@ Hardware Integration Ready
 Estimated Overall Completion:
 ~60%
 
+
+-------------------------------------------------------------------------------
+2026-05-29 AMBE HARDWARE VERIFICATION MILESTONE
+-------------------------------------------------------------------------------
+
+Major Milestone:
+Verified live communication with real ThumbDV AMBE hardware.
+
+Latest Confirmed Commit:
+e1471d6 — Log ThumbDV AMBE firmware version
+
+Hardware Connected
+------------------
+
+Two NW Digital Radio ThumbDV devices were attached and detected.
+
+Detected USB devices:
+
+- ThumbDV serial D30G37BA
+- ThumbDV serial D30G37AJ
+
+Stable Linux device paths:
+
+- /dev/serial/by-id/usb-NW_Digital_Radio_09_25_ThumbDV_D30G37BA-if00-port0
+- /dev/serial/by-id/usb-NW_Digital_Radio_09_25_ThumbDV_D30G37AJ-if00-port0
+
+Driver Status
+-------------
+
+Confirmed Linux kernel FTDI drivers are active:
+
+- ftdi_sio
+- usbserial
+
+Confirmed user is in dialout group.
+
+No external FTDI D2XX driver is required.
+
+AMBE Device Configuration
+-------------------------
+
+reflector.ini now uses stable by-id device paths:
+
+- ambe_decode_device=/dev/serial/by-id/usb-NW_Digital_Radio_09_25_ThumbDV_D30G37BA-if00-port0
+- ambe_encode_device=/dev/serial/by-id/usb-NW_Digital_Radio_09_25_ThumbDV_D30G37AJ-if00-port0
+- ambe_baud=460800
+
+Verified both serial ports open successfully at 460800 baud.
+
+Real AMBE Probe
+---------------
+
+Implemented and verified a real ThumbDV / AMBE-3000 version probe.
+
+Probe TX:
+
+61 00 03 00 31 2F 1D
+
+Probe RX:
+
+61 00 31 00 31 56 31 32 30 2E 45 31 30 30 2E 58 58 58 58 2E 43 31 30 36 2E 47 35 31 34 2E 52 30 30 39 2E 42 30 30 31 30 34 31 31 2E 43 30 30 32 30 32 30 38 00
+
+Parsed AMBE firmware version:
+
+1V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
+
+Verified AMBE Status
+--------------------
+
+Both dongles now report responsive:
+
+- DECODE_PRESENT=1
+- ENCODE_PRESENT=1
+- DECODE_OPEN=1
+- ENCODE_OPEN=1
+- DECODE_RESPONSIVE=1
+- ENCODE_RESPONSIVE=1
+- READY=1
+
+Significance
+------------
+
+The reflector is now communicating with real AMBE hardware.
+
+This confirms:
+
+- FTDI transport works
+- SerialPort works
+- DeviceDiscovery works
+- Stable device paths work
+- AMBEProtocol packet framing works
+- AMBEProtocol response parsing works
+- AMBEDeviceManager health tracking works
+- Dual-dongle architecture is viable
+
+Current AMBE Architecture
+-------------------------
+
+CodecManager
+  -> AMBEDeviceManager
+  -> AMBEProtocol
+  -> SerialPort
+  -> ThumbDV AMBE Hardware
+
+Next Major Development Area
+---------------------------
+
+Real AMBE codec operations.
+
+Immediate next targets:
+
+1. Implement AMBE decode command.
+2. Convert source AMBE frames into PCMFrame.
+3. Route PCMFrame through AudioLevelManager.
+4. Implement AMBE encode command.
+5. Convert PCMFrame back to target AMBE frames.
+6. Validate D-Star -> YSF real audio path.
+7. Validate D-Star -> DMR real audio path.
+8. Continue future protocol output work for NXDN, P25, and M17.
+
+Current Overall Status
+----------------------
+
+Project Phase:
+Live AMBE Hardware Communication Verified
+
+Estimated Overall Completion:
+~75%
+
