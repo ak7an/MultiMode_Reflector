@@ -2,6 +2,7 @@
 
 #include "codec_manager.h"
 #include "audio_level_manager.h"
+#include "protocol_codec_mapper.h"
 #include "logger.h"
 
 #include <cstdint>
@@ -117,6 +118,9 @@ MediaFrame CodecRouter::encode(
     CodecFrame normalizedCodec =
         codec;
 
+    std::vector<uint8_t> protocolPayload =
+        codec.payload;
+
     if (codec.codec == CodecType::PCM)
     {
         PCMFrame pcm =
@@ -139,12 +143,12 @@ MediaFrame CodecRouter::encode(
             std::to_string(codec.streamId) +
             " SAMPLES=" +
             std::to_string(normalized.samples.size()));
-    }
 
-    CodecFrame encoded =
-        CodecManager::encode(
-            normalizedCodec,
-            CodecType::AMBE);
+        protocolPayload =
+            ProtocolCodecMapper::mapPCMToProtocolPayload(
+                normalized,
+                targetProtocol);
+    }
 
     MediaFrame media;
 
@@ -152,21 +156,23 @@ MediaFrame CodecRouter::encode(
         targetProtocol;
 
     media.streamId =
-        encoded.streamId;
+        normalizedCodec.streamId;
 
     media.sequence =
-        encoded.sequence;
+        normalizedCodec.sequence;
 
     media.endOfTransmission =
-        encoded.endOfTransmission;
+        normalizedCodec.endOfTransmission;
 
     media.payload =
-        encoded.payload;
+        protocolPayload;
 
     Logger::log(INFO,
         "CodecRouter encode:"
         " STREAMID=" +
-        std::to_string(codec.streamId));
+        std::to_string(codec.streamId) +
+        " TARGET_PAYLOAD=" +
+        std::to_string(media.payload.size()));
 
     return media;
 }
