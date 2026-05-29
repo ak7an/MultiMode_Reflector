@@ -51,6 +51,8 @@ add_executable(reflector
     src/core/serial_port.cpp
     src/core/device_discovery.cpp
     src/core/hex_dump.cpp
+    src/core/audio_level_config.cpp
+    src/core/audio_level_manager.cpp
     src/protocol/ysf_encoder.cpp
     src/protocol/ysf_network_frame.cpp
     src/protocol/ysf_fich.cpp
