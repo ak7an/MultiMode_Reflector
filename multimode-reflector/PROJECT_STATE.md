@@ -650,3 +650,274 @@ This becomes the foundation for true multimode reflector operation.
 Estimated Overall Completion:
 ~50%
 
+
+-------------------------------------------------------------------------------
+2026-05-29 PROGRESS UPDATE
+-------------------------------------------------------------------------------
+
+Major Milestone:
+The reflector now has a complete codec and AMBE hardware integration architecture.
+
+This session moved the project beyond protocol routing and into real transcoder readiness.
+
+Single-Module Routing Correction
+--------------------------------
+Corrected the routing design back to the intended project architecture:
+
+- Single-module reflector
+- No 26-module XLX-style routing model
+- One active reflector/module context
+- Multiple protocol targets from that single module
+
+Current model:
+
+Single XLXD Module
+  -> RouteConfig
+  -> YSF
+  -> DMR
+  -> Future NXDN / P25 / M17
+
+This preserves the intentionally simple reflector design.
+
+Routing Policy Engine
+---------------------
+Implemented a configurable single-module routing policy.
+
+Current routing configuration supports:
+
+- route_source_reflector
+- route_source_module
+- route_enable_ysf
+- route_enable_dmr
+- route_enable_nxdn
+- route_enable_p25
+- route_enable_m17
+
+Verified behavior:
+
+XLX999/A
+  -> YSF
+  -> DMR
+
+Disabled protocols are not emitted.
+
+Codec Architecture
+------------------
+Added a codec abstraction layer.
+
+New components:
+
+- CodecType
+- CodecFrame
+- CodecRouter
+- CodecManager
+
+Current transcoding flow:
+
+MediaFrame
+  -> Transcoder
+  -> CodecRouter
+  -> CodecManager
+  -> CodecRouter
+  -> MediaFrame
+
+This establishes the insertion point for real codec translation.
+
+AMBE Hardware Integration Path
+------------------------------
+Added an AMBE device integration layer.
+
+New components:
+
+- AMBEDeviceManager
+- AMBEProtocol
+- SerialPort
+- DeviceDiscovery
+- AMBEDeviceStatus
+
+Current AMBE path:
+
+CodecManager
+  -> AMBEDeviceManager
+  -> AMBEProtocol
+  -> SerialPort
+  -> Future DVSI AMBE-3000 USB dongles
+
+Serial Transport
+----------------
+Added reusable serial transport support.
+
+SerialPort currently supports:
+
+- openPort()
+- closePort()
+- isOpen()
+- writeBytes()
+- readBytes()
+
+Implementation uses Linux termios and supports common baud rates including:
+
+- 9600
+- 19200
+- 38400
+- 57600
+- 115200
+- 230400
+- 460800
+
+AMBE Configuration
+------------------
+Added AMBE device configuration to reflector.ini:
+
+- ambe_decode_device=/dev/ttyUSB0
+- ambe_encode_device=/dev/ttyUSB1
+- ambe_baud=460800
+
+Without dongles attached, the reflector behaves correctly:
+
+- Attempts device discovery
+- Attempts serial open
+- Marks AMBE ready state as false
+- Continues running normally
+
+Verified no-dongle startup:
+
+DeviceDiscovery FTDI count: 0
+SerialPort open failed
+AMBE STATUS READY=0
+Reflector continues running
+
+USB / FTDI Discovery
+--------------------
+Added USB serial device discovery.
+
+DeviceDiscovery currently scans:
+
+/dev/serial/by-id
+
+and identifies FTDI-style serial devices.
+
+This prepares the project for stable dongle assignment instead of relying only on /dev/ttyUSB0 and /dev/ttyUSB1.
+
+AMBE Health Status
+------------------
+Added AMBE health/status reporting.
+
+Tracked status fields:
+
+- decodePresent
+- encodePresent
+- decodeOpen
+- encodeOpen
+- decodeResponsive
+- encodeResponsive
+- ready
+
+Verified status output:
+
+AMBE STATUS:
+DECODE_PRESENT=0
+ENCODE_PRESENT=0
+DECODE_OPEN=0
+ENCODE_OPEN=0
+DECODE_RESPONSIVE=0
+ENCODE_RESPONSIVE=0
+READY=0
+
+End-to-End Codec Path Verified
+------------------------------
+The live runtime path now includes:
+
+XLXD Frame
+  -> D-Star Network Parser
+  -> MediaFrame
+  -> MediaRouter
+  -> RouteConfig
+  -> Transcoder
+  -> CodecRouter
+  -> CodecManager
+  -> AMBEDeviceManager
+  -> AMBEProtocol
+  -> CodecManager
+  -> CodecRouter
+  -> MediaOutputQueue
+  -> MediaOutputWorker
+  -> YSF Encoder
+  -> DMR Encoder
+  -> ProtocolNetworkRouter
+
+Verified output includes:
+
+- CodecRouter decode stub
+- CodecManager decode
+- AMBEDeviceManager decode
+- AMBEProtocol decode stub
+- CodecManager encode
+- AMBEDeviceManager encode
+- AMBEProtocol encode stub
+- CodecRouter encode stub
+- YSF packet generation
+- DMR packet generation
+
+Current Working Features
+------------------------
+
+Working:
+- Single-module reflector routing model
+- XLXD polling
+- XLXD handshake
+- XLXD session management
+- XLXD frame parsing
+- D-Star network frame parsing
+- MediaRouter integration
+- RouteConfig policy
+- YSF output generation
+- DMR output generation
+- CodecRouter
+- CodecManager
+- AMBEDeviceManager
+- AMBEProtocol skeleton
+- SerialPort skeleton
+- USB/FTDI device discovery
+- AMBE health reporting
+- Safe no-hardware startup
+- Clean shutdown
+
+Important Recent Commits
+------------------------
+
+- 3e9f620 Restore single-module routing policy model
+- 36edc5e Add codec abstraction layer skeleton
+- b808eb8 Route transcoding through codec abstraction layer
+- 27dff7d Add codec manager layer behind codec router
+- 6b4e199 Add AMBE device manager integration path
+- 99739e3 Add serial port transport skeleton
+- 4f371eb Initialize AMBE device manager from configuration
+- c74f854 Add USB serial device discovery for AMBE hardware
+- be4a46e Add AMBE device health status reporting
+
+Next Major Development Area
+---------------------------
+
+DVSI AMBE-3000 Protocol Implementation
+
+Next steps:
+
+1. Add real AMBEProtocol packet framing.
+2. Implement probe/response validation.
+3. Add FTDI stable device assignment by serial number.
+4. Detect decode and encode dongle roles.
+5. Implement AMBE frame decode path.
+6. Implement AMBE frame encode path.
+7. Replace stub codec passthrough with real DVSI transcoding.
+8. Validate real D-Star -> YSF and D-Star -> DMR voice output.
+
+Current Overall Status
+----------------------
+
+Project Phase:
+Hardware Integration Ready
+
+Estimated Overall Completion:
+~60%
+
