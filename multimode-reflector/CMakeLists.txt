@@ -43,6 +43,7 @@ add_executable(reflector
     src/protocol/protocol_manager.cpp
     src/core/jitter_buffer.cpp
     src/core/transcoder.cpp
+    src/core/codec_router.cpp
     src/protocol/ysf_encoder.cpp
     src/protocol/ysf_network_frame.cpp
     src/protocol/ysf_fich.cpp
