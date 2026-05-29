@@ -20,6 +20,7 @@ add_executable(reflector
     src/net/xlxd_peer_monitor.cpp
     src/net/xlxd_peer_listener.cpp
     src/net/xlxd_poll_packet.cpp
+    src/net/xlxd_handshake_packet.cpp
     src/net/protocol_listener_registry.cpp
     src/net/epoll_server.cpp
     src/net/protocol_peer_registry.cpp
