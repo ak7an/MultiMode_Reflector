@@ -87,54 +87,66 @@ int main() {
         cfg.getInt("m17_enabled", 0) != 0);
 
 
+
     RouteConfig::clear();
 
-    RouteRule route1;
-    route1.reflector =
-        cfg.getString(
-            "route1_reflector",
-            cfg.getString(
-                "route_source_reflector",
-                "XLX999"));
-    route1.module =
-        cfg.getString(
-            "route1_module",
-            cfg.getString(
-                "route_source_module",
-                "A"))[0];
-    route1.ysfEnabled =
-        cfg.getInt(
-            "route1_ysf",
-            cfg.getInt(
-                "route_enable_ysf",
-                1)) != 0;
-    route1.dmrEnabled =
-        cfg.getInt(
-            "route1_dmr",
-            cfg.getInt(
-                "route_enable_dmr",
-                1)) != 0;
-    route1.nxdnEnabled =
-        cfg.getInt(
-            "route1_nxdn",
-            cfg.getInt(
-                "route_enable_nxdn",
-                0)) != 0;
-    route1.p25Enabled =
-        cfg.getInt(
-            "route1_p25",
-            cfg.getInt(
-                "route_enable_p25",
-                0)) != 0;
-    route1.m17Enabled =
-        cfg.getInt(
-            "route1_m17",
-            cfg.getInt(
-                "route_enable_m17",
-                0)) != 0;
+    for (int routeIndex = 1;
+         routeIndex <= 4;
+         ++routeIndex)
+    {
+        std::string prefix =
+            "route" +
+            std::to_string(routeIndex) +
+            "_";
 
-    RouteConfig::addRoute(
-        route1);
+        std::string reflector =
+            cfg.getString(
+                prefix + "reflector",
+                "");
+
+        if (reflector.empty())
+        {
+            continue;
+        }
+
+        RouteRule route;
+
+        route.reflector =
+            reflector;
+
+        route.module =
+            cfg.getString(
+                prefix + "module",
+                "A")[0];
+
+        route.ysfEnabled =
+            cfg.getInt(
+                prefix + "ysf",
+                0) != 0;
+
+        route.dmrEnabled =
+            cfg.getInt(
+                prefix + "dmr",
+                0) != 0;
+
+        route.nxdnEnabled =
+            cfg.getInt(
+                prefix + "nxdn",
+                0) != 0;
+
+        route.p25Enabled =
+            cfg.getInt(
+                prefix + "p25",
+                0) != 0;
+
+        route.m17Enabled =
+            cfg.getInt(
+                prefix + "m17",
+                0) != 0;
+
+        RouteConfig::addRoute(
+            route);
+    }
 
     ProtocolPorts::setDStarPort(
         cfg.getInt("dstar_port", 9000));
