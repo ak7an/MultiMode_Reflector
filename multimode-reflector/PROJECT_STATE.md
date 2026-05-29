@@ -1050,3 +1050,177 @@ Live AMBE Hardware Communication Verified
 Estimated Overall Completion:
 ~75%
 
+
+---
+
+# Recent Development Progress (Post Audio Framework)
+
+## Audio Level Framework
+
+Implemented protocol-specific audio level management infrastructure.
+
+Added:
+
+- PCMFrame abstraction
+- AudioLevelConfig
+- AudioLevelManager
+- reflector.ini gain configuration loading
+
+Supported gain categories:
+
+- D-Star
+- DMR
+- YSF
+- NXDN
+- P25
+- M17
+
+This framework will eventually normalize audio levels between protocols during transcoding.
+
+---
+
+## ThumbDV / AMBE Hardware Integration
+
+Integrated dual ThumbDV USB vocoders into the reflector.
+
+Implemented:
+
+- Device discovery
+- Stable /dev/serial/by-id support
+- Serial port management
+- Device status reporting
+- AMBEDeviceManager
+- AMBEProtocol transport layer
+
+Verified:
+
+- FTDI driver operation
+- Serial communications
+- Stable device naming
+- Dual ThumbDV detection
+
+Current hardware:
+
+Decode Device:
+usb-NW_Digital_Radio_09_25_ThumbDV_D30G37BA-if00-port0
+
+Encode Device:
+usb-NW_Digital_Radio_09_25_ThumbDV_D30G37AJ-if00-port0
+
+---
+
+## ThumbDV Protocol Support
+
+Implemented:
+
+- Packet framing
+- Packet validation
+- Response parsing
+- Packet reassembly
+- Hex dump logging
+- Device reset command
+- Device version query
+
+Verified responses:
+
+- RESET_ACK
+- Firmware version string
+
+Detected firmware:
+
+1V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
+
+---
+
+## DVSI Protocol Recovery
+
+Recovered working DV3000 protocol definitions from the legacy TCD source tree.
+
+Verified:
+
+- PKT_CONTROL
+- PKT_CHANNEL
+- PKT_SPEECH
+
+Recovered:
+
+- AMBE decode packet format
+- AMBE encode packet format
+- Speech packet format
+- Rate configuration values
+- Device initialization sequence
+
+Recovered initialization controls:
+
+- ECMODE
+- DCMODE
+- RATEP
+- CHANFMT
+- SPCHFMT
+- GAIN
+- INIT
+
+---
+
+## First Successful ThumbDV Codec Cycle
+
+The reflector now performs real hardware codec operations.
+
+Verified path:
+
+D-Star AMBE
+→ ThumbDV Decode
+→ PCM
+→ ThumbDV Encode
+→ AMBE
+
+Observed:
+
+- 9-byte D-Star AMBE payload received
+- ThumbDV decode request transmitted
+- 320-byte PCM response received
+- ThumbDV encode request transmitted
+- AMBE response received
+
+Verified:
+
+- Real hardware decode operation
+- Real hardware encode operation
+- End-to-end AMBE → PCM → AMBE processing
+
+This is the first successful codec round-trip performed by the reflector.
+
+---
+
+## Current Status
+
+Operational:
+
+- D-Star ingest
+- YSF ingest
+- DMR ingest
+- XLXD peer connectivity
+- Dynamic protocol routing
+- MediaFrame abstraction
+- Codec routing
+- Audio level framework
+- Dual ThumbDV hardware integration
+- AMBE hardware communications
+- AMBE decode path
+- PCM generation
+- AMBE encode path
+
+Remaining work:
+
+- Finalize AMBE encode response parsing
+- PCMFrame integration into transcoder core
+- AudioLevelManager insertion into PCM path
+- YSF codec mapping
+- DMR codec mapping
+- NXDN implementation
+- P25 implementation
+- M17 implementation
+- Production transcoding validation
+
+Project status has advanced from framework development into a functioning hardware-assisted transcoder prototype.
+
