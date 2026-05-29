@@ -26,6 +26,7 @@
 #include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
 #include "core/protocol_config.h"
+#include "core/route_config.h"
 #include "core/protocol_ports.h"
 #include "core/xlxd_peer_config.h"
 
@@ -84,6 +85,42 @@ int main() {
 
     ProtocolConfig::setM17Enabled(
         cfg.getInt("m17_enabled", 0) != 0);
+
+
+    RouteConfig::setSourceReflector(
+        cfg.getString(
+            "route_source_reflector",
+            "XLX999"));
+
+    RouteConfig::setSourceModule(
+        cfg.getString(
+            "route_source_module",
+            "A")[0]);
+
+    RouteConfig::setYSFEnabled(
+        cfg.getInt(
+            "route_enable_ysf",
+            1) != 0);
+
+    RouteConfig::setDMREnabled(
+        cfg.getInt(
+            "route_enable_dmr",
+            1) != 0);
+
+    RouteConfig::setNXDNEnabled(
+        cfg.getInt(
+            "route_enable_nxdn",
+            0) != 0);
+
+    RouteConfig::setP25Enabled(
+        cfg.getInt(
+            "route_enable_p25",
+            0) != 0);
+
+    RouteConfig::setM17Enabled(
+        cfg.getInt(
+            "route_enable_m17",
+            0) != 0);
 
     ProtocolPorts::setDStarPort(
         cfg.getInt("dstar_port", 9000));

@@ -70,6 +70,7 @@ add_executable(reflector
     src/system/timer.cpp
     src/core/media_router.cpp
     src/core/protocol_config.cpp
+    src/core/route_config.cpp
     src/core/protocol_ports.cpp
     src/core/xlxd_peer_config.cpp
     src/protocol/protocol_encoder_capabilities.cpp
