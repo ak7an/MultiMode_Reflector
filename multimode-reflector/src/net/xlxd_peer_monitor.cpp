@@ -36,8 +36,15 @@ static void monitorThread()
                 XLXDPeerConfig::timeoutMs());
         }
 
+        XLXDPollData pollData;
+        pollData.reflector =
+            XLXDPeerConfig::reflector();
+        pollData.module =
+            XLXDPeerConfig::module();
+
         auto packet =
-            XLXDPollPacket::build();
+            XLXDPollPacket::build(
+                pollData);
 
         auto* router =
             GlobalProtocolRouter::router();

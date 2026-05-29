@@ -11,6 +11,7 @@
 #include "../core/logger.h"
 #include "../core/xlxd_peer_config.h"
 #include "global_peer_registry.h"
+#include "xlxd_poll_packet.h"
 
 static std::atomic<bool> g_peerListenerRunning(false);
 static std::thread g_peerListenerThread;
@@ -86,11 +87,18 @@ static void listenerThread()
                 " LEN=" +
                 std::to_string(received));
 
-            if (received >= 4 &&
-                std::memcmp(buffer, "XLXP", 4) == 0)
+            XLXDPollData pollData;
+
+            if (XLXDPollPacket::parse(
+                    buffer,
+                    static_cast<size_t>(received),
+                    pollData))
             {
                 Logger::log(INFO,
-                    "XLXD peer poll received");
+                    "XLXD peer poll received: REFLECTOR=" +
+                    pollData.reflector +
+                    " MODULE=" +
+                    std::string(1, pollData.module));
 
                 auto* registry =
                     GlobalPeerRegistry::registry();
