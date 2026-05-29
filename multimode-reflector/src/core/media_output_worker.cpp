@@ -3,13 +3,16 @@
 #include "active_stream.h"
 #include "debug_udp_sender.h"
 #include "../net/global_protocol_router.h"
+#include "../net/xlxd_frame_packet.h"
 #include "../protocol/protocol_definitions.h"
+#include "../protocol/dstar_network_frame.h"
 #include "logger.h"
 #include "media_output_queue.h"
 #include "media_pacer.h"
 #include "media_timing.h"
 #include "status_reporter.h"
 #include "packet_capture.h"
+#include "xlxd_peer_config.h"
 
 
 static std::string frameTypeToString(
@@ -232,9 +235,64 @@ void MediaOutputWorker::run()
                 break;
             }
 
-            router->routePacket(
-                targetProto,
-                packet);
+            std::vector<uint8_t> routedPacket =
+                packet;
+
+            if (frame.protocol == MediaProtocol::DSTAR &&
+                XLXDPeerConfig::enabled())
+            {
+                std::string xlxdPeerPrefix =
+                    XLXDPeerConfig::host() + ":";
+
+                bool frameCameFromXLXDPeer =
+                    frame.sourcePeer.rfind(
+                        xlxdPeerPrefix,
+                        0) == 0;
+
+                if (frameCameFromXLXDPeer)
+                {
+                    Logger::log(INFO,
+                        "XLXD outbound route suppressed to avoid peer loop:"
+                        " STREAMID=" +
+                        std::to_string(frame.streamId) +
+                        " SEQ=" +
+                        std::to_string(frame.sequence));
+
+                    routedPacket.clear();
+                }
+                else
+                {
+                    XLXDFrameData xlxdFrame;
+                    xlxdFrame.reflector =
+                        XLXDPeerConfig::reflector();
+                    xlxdFrame.module =
+                        XLXDPeerConfig::module();
+                    xlxdFrame.payload =
+                        DStarNetworkFrame::build(
+                            frame);
+
+                    routedPacket =
+                        XLXDFramePacket::build(
+                            xlxdFrame);
+
+                    Logger::log(INFO,
+                        "D-Star packet wrapped for XLXD route:"
+                        " STREAMID=" +
+                        std::to_string(frame.streamId) +
+                        " SEQ=" +
+                        std::to_string(frame.sequence) +
+                        " XLXD_LEN=" +
+                        std::to_string(
+                            routedPacket.size()));
+                }
+            }
+
+            if (!routedPacket.empty())
+            {
+                router->routePacket(
+                    targetProto,
+                    routedPacket);
+            }
         }
 
 
