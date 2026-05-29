@@ -1,6 +1,7 @@
 #include "ambe_device_manager.h"
 
 #include "logger.h"
+#include "device_discovery.h"
 
 bool AMBEDeviceManager::m_ready = false;
 
@@ -12,6 +13,8 @@ bool AMBEDeviceManager::initialize(
     const std::string& encodeDevice,
     int baudRate)
 {
+    DeviceDiscovery::findFTDIDevices();
+
     bool decodeOk =
         m_decodePort.openPort(
             decodeDevice,
