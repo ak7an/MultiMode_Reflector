@@ -1,5 +1,7 @@
 #include "codec_router.h"
 
+#include "codec_manager.h"
+
 #include "logger.h"
 
 CodecFrame CodecRouter::decode(
@@ -27,29 +29,35 @@ CodecFrame CodecRouter::decode(
         " STREAMID=" +
         std::to_string(media.streamId));
 
-    return frame;
+    return CodecManager::decode(
+        frame);
 }
 
 MediaFrame CodecRouter::encode(
     const CodecFrame& codec,
     MediaProtocol targetProtocol)
 {
+    CodecFrame encoded =
+        CodecManager::encode(
+            codec,
+            CodecType::AMBE);
+
     MediaFrame media;
 
     media.protocol =
         targetProtocol;
 
     media.streamId =
-        codec.streamId;
+        encoded.streamId;
 
     media.sequence =
-        codec.sequence;
+        encoded.sequence;
 
     media.endOfTransmission =
-        codec.endOfTransmission;
+        encoded.endOfTransmission;
 
     media.payload =
-        codec.payload;
+        encoded.payload;
 
     Logger::log(INFO,
         "CodecRouter encode stub:"
