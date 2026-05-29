@@ -13,6 +13,7 @@
 #include "global_peer_registry.h"
 #include "xlxd_poll_packet.h"
 #include "xlxd_handshake_packet.h"
+#include "xlxd_frame_packet.h"
 
 static std::atomic<bool> g_peerListenerRunning(false);
 static std::thread g_peerListenerThread;
@@ -157,6 +158,25 @@ static void listenerThread()
                                 "/" +
                                 std::string(1, handshakeData.module));
                         }
+                    }
+                }
+                else
+                {
+                    XLXDFrameData frameData;
+
+                    if (XLXDFramePacket::parse(
+                            buffer,
+                            static_cast<size_t>(received),
+                            frameData))
+                    {
+                        Logger::log(INFO,
+                            "XLXD frame received: REFLECTOR=" +
+                            frameData.reflector +
+                            " MODULE=" +
+                            std::string(1, frameData.module) +
+                            " PAYLOAD_LEN=" +
+                            std::to_string(
+                                frameData.payload.size()));
                     }
                 }
             }
