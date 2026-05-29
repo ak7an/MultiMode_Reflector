@@ -12,6 +12,7 @@
 #include "../core/xlxd_peer_config.h"
 #include "../core/media_output_queue.h"
 #include "../core/media_frame_type.h"
+#include "../protocol/dstar_network_frame.h"
 #include "global_peer_registry.h"
 #include "xlxd_poll_packet.h"
 #include "xlxd_handshake_packet.h"
@@ -198,23 +199,25 @@ static void listenerThread()
                                     frameData.payload.size()));
 
                             MediaFrame mediaFrame;
-                            mediaFrame.protocol =
-                                MediaProtocol::DSTAR;
-                            mediaFrame.frameType =
-                                MediaFrameType::VOICE;
-                            mediaFrame.streamId =
-                                0;
-                            mediaFrame.sourceCallsign =
-                                frameData.reflector;
-                            mediaFrame.sequence =
-                                0;
-                            mediaFrame.endOfTransmission =
-                                false;
+
+                            if (!DStarNetworkFrame::parse(
+                                    frameData.payload.data(),
+                                    frameData.payload.size(),
+                                    mediaFrame))
+                            {
+                                Logger::log(WARN,
+                                    "XLXD frame rejected: REFLECTOR=" +
+                                    frameData.reflector +
+                                    " MODULE=" +
+                                    std::string(1, frameData.module) +
+                                    " REASON=invalid D-Star network payload");
+
+                                return;
+                            }
+
                             mediaFrame.sourcePeer =
                                 host + ":" +
                                 std::to_string(port);
-                            mediaFrame.payload =
-                                frameData.payload;
                             mediaFrame.createdAt =
                                 std::chrono::steady_clock::now();
 
@@ -222,13 +225,19 @@ static void listenerThread()
                                 mediaFrame);
 
                             Logger::log(INFO,
-                                "XLXD frame queued to MediaOutputQueue: REFLECTOR=" +
+                                "XLXD D-Star frame queued: REFLECTOR=" +
                                 frameData.reflector +
                                 " MODULE=" +
                                 std::string(1, frameData.module) +
+                                " STREAMID=" +
+                                std::to_string(
+                                    mediaFrame.streamId) +
+                                " SEQ=" +
+                                std::to_string(
+                                    mediaFrame.sequence) +
                                 " PAYLOAD_LEN=" +
                                 std::to_string(
-                                    frameData.payload.size()));
+                                    mediaFrame.payload.size()));
                         }
                         else
                         {
