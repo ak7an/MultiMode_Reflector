@@ -8,6 +8,14 @@ namespace
     constexpr uint8_t AMBE_PACKET_START = 0x61;
 
     constexpr uint8_t PKT_CONTROL = 0x00;
+    constexpr uint8_t PKT_CHANNEL = 0x01;
+    constexpr uint8_t PKT_SPEECH  = 0x02;
+
+    constexpr uint8_t PKT_SPEECHD = 0x00;
+    constexpr uint8_t PKT_CHAND   = 0x01;
+
+    constexpr uint8_t AMBE_NUM_BITS = 72;
+    constexpr uint8_t PCM_NUM_SAMPLES = 160;
 
     constexpr uint8_t CMD_PROBE      = 0x31;
     constexpr uint8_t CMD_SOFT_RESET = 0x34;
@@ -92,6 +100,115 @@ static std::vector<uint8_t> buildPacket(
         payload.end());
 
     return packet;
+}
+
+
+static std::vector<uint8_t> buildAMBEToPCMPacket(
+    const std::vector<uint8_t>& ambe)
+{
+    std::vector<uint8_t> payload;
+
+    payload.push_back(
+        PKT_CHAND);
+
+    payload.push_back(
+        AMBE_NUM_BITS);
+
+    payload.insert(
+        payload.end(),
+        ambe.begin(),
+        ambe.end());
+
+    return buildPacket(
+        PKT_CHANNEL,
+        payload);
+}
+
+static std::vector<uint8_t> buildPCMToAMBEPacket(
+    const std::vector<uint8_t>& pcm)
+{
+    std::vector<uint8_t> payload;
+
+    payload.push_back(
+        PKT_SPEECHD);
+
+    payload.push_back(
+        PCM_NUM_SAMPLES);
+
+    payload.insert(
+        payload.end(),
+        pcm.begin(),
+        pcm.end());
+
+    return buildPacket(
+        PKT_SPEECH,
+        payload);
+}
+
+static bool extractPCMResponse(
+    const std::vector<uint8_t>& packet,
+    std::vector<uint8_t>& pcm)
+{
+    pcm.clear();
+
+    if (packet.size() != 326)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol PCM response invalid size:"
+            " LEN=" +
+            std::to_string(packet.size()));
+
+        return false;
+    }
+
+    if (packet[3] != PKT_SPEECH ||
+        packet[4] != PKT_SPEECHD ||
+        packet[5] != PCM_NUM_SAMPLES)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol PCM response invalid header");
+
+        return false;
+    }
+
+    pcm.assign(
+        packet.begin() + 6,
+        packet.end());
+
+    return true;
+}
+
+static bool extractAMBEResponse(
+    const std::vector<uint8_t>& packet,
+    std::vector<uint8_t>& ambe)
+{
+    ambe.clear();
+
+    if (packet.size() != 15)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol AMBE response invalid size:"
+            " LEN=" +
+            std::to_string(packet.size()));
+
+        return false;
+    }
+
+    if (packet[3] != PKT_CHANNEL ||
+        packet[4] != PKT_CHAND ||
+        packet[5] != AMBE_NUM_BITS)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol AMBE response invalid header");
+
+        return false;
+    }
+
+    ambe.assign(
+        packet.begin() + 6,
+        packet.end());
+
+    return true;
 }
 
 
@@ -314,8 +431,8 @@ CodecFrame AMBEProtocol::decode(
     }
 
     auto command =
-        buildPacket(
-            CMD_DECODE);
+        buildAMBEToPCMPacket(
+            input.payload);
 
     Logger::log(INFO,
         "AMBEProtocol decode:"
@@ -332,11 +449,35 @@ CodecFrame AMBEProtocol::decode(
 
     std::vector<uint8_t> response;
 
-    readResponse(
-        port,
-        response);
+    CodecFrame output =
+        input;
 
-    return input;
+    if (readResponse(
+            port,
+            response))
+    {
+        std::vector<uint8_t> pcm;
+
+        if (extractPCMResponse(
+                response,
+                pcm))
+        {
+            output.codec =
+                CodecType::PCM;
+
+            output.payload =
+                pcm;
+
+            Logger::log(INFO,
+                "AMBEProtocol decode PCM ready:"
+                " STREAMID=" +
+                std::to_string(output.streamId) +
+                " PCM_BYTES=" +
+                std::to_string(output.payload.size()));
+        }
+    }
+
+    return output;
 }
 
 CodecFrame AMBEProtocol::encode(
@@ -351,20 +492,22 @@ CodecFrame AMBEProtocol::encode(
         return input;
     }
 
-    if (input.payload.empty())
+    if (input.payload.size() != 320)
     {
         Logger::log(WARN,
             "AMBEProtocol encode skipped:"
             " STREAMID=" +
             std::to_string(input.streamId) +
-            " REASON=empty PCM/codec payload");
+            " REASON=invalid PCM payload size"
+            " PAYLOAD_LEN=" +
+            std::to_string(input.payload.size()));
 
         return input;
     }
 
     auto command =
-        buildPacket(
-            CMD_ENCODE);
+        buildPCMToAMBEPacket(
+            input.payload);
 
     Logger::log(INFO,
         "AMBEProtocol encode:"
@@ -381,11 +524,35 @@ CodecFrame AMBEProtocol::encode(
 
     std::vector<uint8_t> response;
 
-    readResponse(
-        port,
-        response);
+    CodecFrame output =
+        input;
 
-    return input;
+    if (readResponse(
+            port,
+            response))
+    {
+        std::vector<uint8_t> ambe;
+
+        if (extractAMBEResponse(
+                response,
+                ambe))
+        {
+            output.codec =
+                CodecType::AMBE;
+
+            output.payload =
+                ambe;
+
+            Logger::log(INFO,
+                "AMBEProtocol encode AMBE ready:"
+                " STREAMID=" +
+                std::to_string(output.streamId) +
+                " AMBE_BYTES=" +
+                std::to_string(output.payload.size()));
+        }
+    }
+
+    return output;
 }
 
 bool AMBEProtocol::sendCommand(
