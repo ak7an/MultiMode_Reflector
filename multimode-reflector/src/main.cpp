@@ -88,65 +88,45 @@ int main() {
 
 
 
-    RouteConfig::clear();
 
-    for (int routeIndex = 1;
-         routeIndex <= 4;
-         ++routeIndex)
-    {
-        std::string prefix =
-            "route" +
-            std::to_string(routeIndex) +
-            "_";
-
-        std::string reflector =
+    RouteConfig::setReflector(
+        cfg.getString(
+            "route_source_reflector",
             cfg.getString(
-                prefix + "reflector",
-                "");
+                "xlxd_peer_reflector",
+                "XLX999")));
 
-        if (reflector.empty())
-        {
-            continue;
-        }
-
-        RouteRule route;
-
-        route.reflector =
-            reflector;
-
-        route.module =
+    RouteConfig::setModule(
+        cfg.getString(
+            "route_source_module",
             cfg.getString(
-                prefix + "module",
-                "A")[0];
+                "xlxd_peer_module",
+                "A"))[0]);
 
-        route.ysfEnabled =
-            cfg.getInt(
-                prefix + "ysf",
-                0) != 0;
+    RouteConfig::setYSFEnabled(
+        cfg.getInt(
+            "route_enable_ysf",
+            1) != 0);
 
-        route.dmrEnabled =
-            cfg.getInt(
-                prefix + "dmr",
-                0) != 0;
+    RouteConfig::setDMREnabled(
+        cfg.getInt(
+            "route_enable_dmr",
+            1) != 0);
 
-        route.nxdnEnabled =
-            cfg.getInt(
-                prefix + "nxdn",
-                0) != 0;
+    RouteConfig::setNXDNEnabled(
+        cfg.getInt(
+            "route_enable_nxdn",
+            0) != 0);
 
-        route.p25Enabled =
-            cfg.getInt(
-                prefix + "p25",
-                0) != 0;
+    RouteConfig::setP25Enabled(
+        cfg.getInt(
+            "route_enable_p25",
+            0) != 0);
 
-        route.m17Enabled =
-            cfg.getInt(
-                prefix + "m17",
-                0) != 0;
-
-        RouteConfig::addRoute(
-            route);
-    }
+    RouteConfig::setM17Enabled(
+        cfg.getInt(
+            "route_enable_m17",
+            0) != 0);
 
     ProtocolPorts::setDStarPort(
         cfg.getInt("dstar_port", 9000));
