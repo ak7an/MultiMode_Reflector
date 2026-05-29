@@ -1,4 +1,5 @@
 #include "dmr_network_frame.h"
+#include "dmr_voice_frame.h"
 
 #include <cstring>
 
@@ -28,9 +29,8 @@ bool DMRNetworkFrame::parse(
     frame.frameType =
         MediaFrameType::VOICE;
 
-    frame.payload.assign(
+    return DMRVoiceFrame::parse(
         data + 20,
-        data + length);
-
-    return true;
+        length - 20,
+        frame);
 }

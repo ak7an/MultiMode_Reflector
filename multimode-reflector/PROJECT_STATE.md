@@ -1411,3 +1411,35 @@ Remaining work is primarily protocol-specific codec
 generation and packet construction rather than AMBE
 hardware integration.
 
+
+-------------------------------------------------------------------------------
+UPDATE — YSF VOICE FRAME LAYER
+-------------------------------------------------------------------------------
+
+Latest Confirmed Commit:
+<replace with commit hash>
+
+Implemented:
+
+- YSFVoiceFrame abstraction
+- Separation of YSF voice payload handling from
+  YSF network transport handling
+- YSFNetworkFrame now delegates voice payload
+  construction to YSFVoiceFrame
+
+Current YSF Architecture:
+
+MediaFrame
+    ↓
+YSFVoiceFrame
+    ↓
+YSFNetworkFrame
+    ↓
+YSF Packet
+
+Status:
+
+- Architecture layer complete
+- Voice payload currently placeholder
+- Real YSF voice frame generation still pending
+

@@ -1,5 +1,7 @@
 #include "dmr_network_builder.h"
+#include "dmr_voice_frame.h"
 
+#include <algorithm>
 #include <cstring>
 
 std::vector<uint8_t>
@@ -28,14 +30,18 @@ DMRNetworkBuilder::build(
 
     const size_t payloadOffset = 20;
 
+    std::vector<uint8_t> voicePayload =
+        DMRVoiceFrame::build(
+            frame);
+
     const size_t copyLength =
         std::min(
-            frame.payload.size(),
+            voicePayload.size(),
             packet.size() - payloadOffset);
 
     std::memcpy(
         &packet[payloadOffset],
-        frame.payload.data(),
+        voicePayload.data(),
         copyLength);
 
     return packet;

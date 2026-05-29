@@ -87,6 +87,7 @@ add_executable(reflector
     src/core/xlxd_peer_config.cpp
     src/protocol/protocol_encoder_capabilities.cpp
     src/protocol/dmr_network_builder.cpp
+    src/protocol/dmr_voice_frame.cpp
 
 
 
