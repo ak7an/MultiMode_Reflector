@@ -42,6 +42,59 @@ static std::vector<uint8_t> buildPacket(
     return packet;
 }
 
+
+bool AMBEProtocol::validatePacket(
+    const std::vector<uint8_t>& packet)
+{
+    if (packet.size() < 4)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol invalid packet: too short LEN=" +
+            std::to_string(packet.size()));
+
+        return false;
+    }
+
+    if (packet[0] != AMBE_PACKET_START)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol invalid packet: bad start BYTE=" +
+            std::to_string(packet[0]));
+
+        return false;
+    }
+
+    uint16_t length =
+        static_cast<uint16_t>(
+            (packet[1] << 8) |
+            packet[2]);
+
+    size_t expectedSize =
+        static_cast<size_t>(
+            length) + 3;
+
+    if (packet.size() != expectedSize)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol invalid packet: length mismatch"
+            " DECLARED=" +
+            std::to_string(length) +
+            " ACTUAL=" +
+            std::to_string(packet.size()));
+
+        return false;
+    }
+
+    Logger::log(INFO,
+        "AMBEProtocol packet valid:"
+        " CMD=" +
+        std::to_string(packet[3]) +
+        " LEN=" +
+        std::to_string(length));
+
+    return true;
+}
+
 bool AMBEProtocol::probe(
     SerialPort& port)
 {
@@ -185,7 +238,10 @@ bool AMBEProtocol::readResponse(
         Logger::log(INFO,
             "AMBE RX: " +
             HexDump::toHex(response));
+
+        return validatePacket(
+            response);
     }
 
-    return result;
+    return false;
 }
