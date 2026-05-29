@@ -1224,3 +1224,128 @@ Remaining work:
 
 Project status has advanced from framework development into a functioning hardware-assisted transcoder prototype.
 
+
+-------------------------------------------------------------------------------
+UPDATE — 2026-05-29
+-------------------------------------------------------------------------------
+
+Latest Confirmed Commit:
+b49938a — Add protocol codec mapper layer
+
+Repository Branch:
+next-feature
+
+Hardware Transcoding Status:
+COMPLETE
+
+Verified Operational:
+
+- Dual ThumbDV AMBE-3000 devices detected
+- Dedicated decode dongle assigned
+- Dedicated encode dongle assigned
+- ThumbDV reset/probe sequence operational
+- ThumbDV version interrogation operational
+- Real AMBE decode operational
+- Real PCM generation operational
+- Real AMBE encode operational
+- First successful AMBE → PCM → AMBE round-trip completed
+
+AMBE Parser Status:
+
+Resolved:
+- ThumbDV encode responses return 12-byte packets
+- Previous parser incorrectly expected 15-byte packets
+- Parser now validates payload length dynamically
+- 48-bit AMBE responses accepted correctly
+
+Audio Processing Status:
+
+Implemented:
+
+- PCMFrame transport layer
+- AudioLevelConfig
+- AudioLevelManager
+- PCM normalization insertion point
+
+Current Audio Path:
+
+AMBE
+  ↓
+ThumbDV Decode
+  ↓
+PCMFrame
+  ↓
+AudioLevelManager
+  ↓
+PCMFrame
+
+Protocol Mapping Status:
+
+Implemented:
+
+- ProtocolCodecMapper
+- PCM separated from protocol packet generation
+- Protocol payload generation now occurs after PCM processing
+
+Current Transcoding Architecture:
+
+D-Star AMBE
+    ↓
+ThumbDV Decode
+    ↓
+PCMFrame
+    ↓
+AudioLevelManager
+    ↓
+ProtocolCodecMapper
+    ↓
+Protocol Encoder
+    ↓
+Network Packet
+
+Verified Runtime Flow:
+
+DSTAR
+  ↓
+PCM
+  ↓
+YSF
+
+DSTAR
+  ↓
+PCM
+  ↓
+DMR
+
+Current Limitations:
+
+- YSF protocol payloads remain placeholder PCM payloads
+- DMR protocol payloads remain placeholder PCM payloads
+- Protocol-specific codec mapping not yet implemented
+- NXDN codec mapping not implemented
+- P25 codec mapping not implemented
+- M17 Codec2 mapping not implemented
+
+Next Development Phase:
+
+Protocol Codec Mapping
+
+Priority Order:
+
+1. YSF codec mapping
+2. DMR codec mapping
+3. NXDN codec mapping
+4. P25 codec mapping
+5. M17 Codec2 integration
+
+Project Assessment:
+
+The hardware transcoding core is now operational.
+
+The project has successfully transitioned from
+hardware bring-up into protocol codec implementation.
+
+Remaining work is primarily protocol-specific codec
+generation and packet construction rather than AMBE
+hardware integration.
+
