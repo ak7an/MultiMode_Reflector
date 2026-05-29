@@ -184,19 +184,35 @@ static bool extractAMBEResponse(
 {
     ambe.clear();
 
-    if (packet.size() != 15)
+    if (packet.size() < 6)
     {
         Logger::log(WARN,
-            "AMBEProtocol AMBE response invalid size:"
+            "AMBEProtocol AMBE response too short:"
             " LEN=" +
             std::to_string(packet.size()));
 
         return false;
     }
 
+    uint16_t payloadLength =
+        static_cast<uint16_t>(
+            (packet[1] << 8) |
+            packet[2]);
+
+    if (packet.size() != payloadLength + 4)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol AMBE response length mismatch:"
+            " DECLARED=" +
+            std::to_string(payloadLength) +
+            " ACTUAL=" +
+            std::to_string(packet.size()));
+
+        return false;
+    }
+
     if (packet[3] != PKT_CHANNEL ||
-        packet[4] != PKT_CHAND ||
-        packet[5] != AMBE_NUM_BITS)
+        packet[4] != PKT_CHAND)
     {
         Logger::log(WARN,
             "AMBEProtocol AMBE response invalid header");
@@ -204,9 +220,21 @@ static bool extractAMBEResponse(
         return false;
     }
 
+    uint8_t bitCount =
+        packet[5];
+
+    Logger::log(INFO,
+        "AMBEProtocol AMBE bits=" +
+        std::to_string(bitCount));
+
     ambe.assign(
         packet.begin() + 6,
         packet.end());
+
+    Logger::log(INFO,
+        "AMBEProtocol encode AMBE ready:"
+        " BYTES=" +
+        std::to_string(ambe.size()));
 
     return true;
 }
