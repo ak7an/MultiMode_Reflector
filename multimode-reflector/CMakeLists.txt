@@ -46,6 +46,8 @@ add_executable(reflector
     src/core/codec_router.cpp
     src/core/codec_manager.cpp
     src/core/ambe_device_manager.cpp
+    src/core/ambe_device_status.cpp
+    src/core/ambe_protocol.cpp
     src/core/serial_port.cpp
     src/core/device_discovery.cpp
     src/protocol/ysf_encoder.cpp

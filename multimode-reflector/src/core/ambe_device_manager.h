@@ -2,6 +2,7 @@
 
 #include "codec_frame.h"
 #include "serial_port.h"
+#include "ambe_device_status.h"
 
 #include <string>
 
@@ -22,10 +23,14 @@ public:
 
     static bool ready();
 
+    static AMBEDeviceStatus status();
+
 private:
 
     static bool m_ready;
 
     static SerialPort m_decodePort;
     static SerialPort m_encodePort;
+
+    static AMBEDeviceStatus m_status;
 };
