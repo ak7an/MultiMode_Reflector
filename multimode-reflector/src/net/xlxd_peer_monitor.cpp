@@ -7,6 +7,7 @@
 #include "../core/logger.h"
 #include "../core/xlxd_peer_config.h"
 #include "xlxd_poll_packet.h"
+#include "xlxd_handshake_packet.h"
 #include "global_protocol_router.h"
 #include "global_peer_registry.h"
 
@@ -46,6 +47,18 @@ static void monitorThread()
             XLXDPollPacket::build(
                 pollData);
 
+        XLXDHandshakeData handshakeData;
+        handshakeData.reflector =
+            XLXDPeerConfig::reflector();
+        handshakeData.module =
+            XLXDPeerConfig::module();
+        handshakeData.protocolVersion =
+            1;
+
+        auto handshakePacket =
+            XLXDHandshakePacket::build(
+                handshakeData);
+
         auto* router =
             GlobalProtocolRouter::router();
 
@@ -54,6 +67,10 @@ static void monitorThread()
             router->routePacket(
                 ProtocolType::DSTAR,
                 packet);
+
+            router->routePacket(
+                ProtocolType::DSTAR,
+                handshakePacket);
         }
 
         std::this_thread::sleep_for(

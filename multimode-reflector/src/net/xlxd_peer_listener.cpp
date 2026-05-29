@@ -12,6 +12,7 @@
 #include "../core/xlxd_peer_config.h"
 #include "global_peer_registry.h"
 #include "xlxd_poll_packet.h"
+#include "xlxd_handshake_packet.h"
 
 static std::atomic<bool> g_peerListenerRunning(false);
 static std::thread g_peerListenerThread;
@@ -111,6 +112,45 @@ static void listenerThread()
                         port,
                         pollData.reflector,
                         pollData.module);
+                }
+            }
+            else
+            {
+                XLXDHandshakeData handshakeData;
+
+                if (XLXDHandshakePacket::parse(
+                        buffer,
+                        static_cast<size_t>(received),
+                        handshakeData))
+                {
+                    Logger::log(INFO,
+                        "XLXD peer handshake received: REFLECTOR=" +
+                        handshakeData.reflector +
+                        " MODULE=" +
+                        std::string(1, handshakeData.module) +
+                        " VERSION=" +
+                        std::to_string(
+                            handshakeData.protocolVersion));
+
+                    auto* registry =
+                        GlobalPeerRegistry::registry();
+
+                    if (registry != nullptr)
+                    {
+                        if (registry->markPeerReceivedValidated(
+                                ProtocolType::DSTAR,
+                                host,
+                                port,
+                                handshakeData.reflector,
+                                handshakeData.module))
+                        {
+                            Logger::log(INFO,
+                                "XLXD peer session established: " +
+                                handshakeData.reflector +
+                                "/" +
+                                std::string(1, handshakeData.module));
+                        }
+                    }
                 }
             }
         }
