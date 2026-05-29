@@ -33,6 +33,29 @@ static std::string commandName(
     }
 }
 
+static std::string payloadToAscii(
+    const std::vector<uint8_t>& payload)
+{
+    std::string text;
+
+    for (uint8_t byte : payload)
+    {
+        if (byte == 0)
+        {
+            break;
+        }
+
+        if (byte >= 32 && byte <= 126)
+        {
+            text.push_back(
+                static_cast<char>(
+                    byte));
+        }
+    }
+
+    return text;
+}
+
 static std::vector<uint8_t> buildPacket(
     uint8_t packetType,
     const std::vector<uint8_t>& payload = {})
@@ -149,6 +172,20 @@ AMBEResponse AMBEProtocol::parseResponse(
         commandName(response.command) +
         " PAYLOAD_LEN=" +
         std::to_string(response.payload.size()));
+
+    if (response.command == CMD_PROBE)
+    {
+        std::string version =
+            payloadToAscii(
+                response.payload);
+
+        if (!version.empty())
+        {
+            Logger::log(INFO,
+                "AMBE Device Version: " +
+                version);
+        }
+    }
 
     return response;
 }
