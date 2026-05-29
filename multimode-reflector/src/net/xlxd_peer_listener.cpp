@@ -11,6 +11,7 @@
 #include "../core/logger.h"
 #include "../core/xlxd_peer_config.h"
 #include "../core/media_output_queue.h"
+#include "../core/media_router.h"
 #include "../core/media_frame_type.h"
 #include "../protocol/dstar_network_frame.h"
 #include "global_peer_registry.h"
@@ -225,11 +226,47 @@ static void listenerThread()
                             mediaFrame.createdAt =
                                 std::chrono::steady_clock::now();
 
-                            MediaOutputQueue::push(
-                                mediaFrame);
+                            MediaRouteResult routeResult =
+                                MediaRouter::route(
+                                    mediaFrame);
+
+                            if (routeResult.action ==
+                                RouteAction::DROP)
+                            {
+                                Logger::log(INFO,
+                                    "XLXD D-Star frame dropped by MediaRouter:"
+                                    " STREAMID=" +
+                                    std::to_string(
+                                        mediaFrame.streamId) +
+                                    " SEQ=" +
+                                    std::to_string(
+                                        mediaFrame.sequence));
+
+                                return;
+                            }
+
+                            if (!routeResult.transcodedFrames.empty())
+                            {
+                                for (auto routedFrame :
+                                     routeResult.transcodedFrames)
+                                {
+                                    routedFrame.sourceReflector =
+                                        frameData.reflector;
+                                    routedFrame.sourceModule =
+                                        frameData.module;
+
+                                    MediaOutputQueue::push(
+                                        routedFrame);
+                                }
+                            }
+                            else
+                            {
+                                MediaOutputQueue::push(
+                                    mediaFrame);
+                            }
 
                             Logger::log(INFO,
-                                "XLXD D-Star frame queued: REFLECTOR=" +
+                                "XLXD D-Star frame routed: REFLECTOR=" +
                                 frameData.reflector +
                                 " MODULE=" +
                                 std::string(1, frameData.module) +

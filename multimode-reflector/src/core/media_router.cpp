@@ -162,6 +162,10 @@ MediaRouteResult MediaRouter::route(
         std::to_string(frame.sequence) +
         " EOT=" +
         std::to_string(frame.endOfTransmission) +
+        " REFLECTOR=" +
+        frame.sourceReflector +
+        " MODULE=" +
+        std::string(1, frame.sourceModule) +
         " RESULT=" +
         result.reason +
         " DEST=ALL");
