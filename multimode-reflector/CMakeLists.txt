@@ -45,6 +45,7 @@ add_executable(reflector
     src/core/transcoder.cpp
     src/core/codec_router.cpp
     src/core/codec_manager.cpp
+    src/core/ambe_device_manager.cpp
     src/protocol/ysf_encoder.cpp
     src/protocol/ysf_network_frame.cpp
     src/protocol/ysf_fich.cpp
