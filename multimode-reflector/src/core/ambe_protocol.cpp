@@ -11,6 +11,7 @@ namespace
 
     constexpr uint8_t CMD_PROBE      = 0x31;
     constexpr uint8_t CMD_SOFT_RESET = 0x34;
+    constexpr uint8_t CMD_RESET_ACK  = 0x39;
     constexpr uint8_t CMD_DECODE = 0x02;
     constexpr uint8_t CMD_ENCODE = 0x03;
 }
@@ -25,6 +26,9 @@ static std::string commandName(
 
     case CMD_SOFT_RESET:
         return "SOFT_RESET";
+
+    case CMD_RESET_ACK:
+        return "RESET_ACK";
 
     case CMD_DECODE:
         return "DECODE";
