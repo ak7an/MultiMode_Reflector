@@ -76,6 +76,15 @@ int main() {
     ProtocolConfig::setDMREnabled(
         cfg.getInt("dmr_enabled", 1) != 0);
 
+    ProtocolConfig::setNXDNEnabled(
+        cfg.getInt("nxdn_enabled", 0) != 0);
+
+    ProtocolConfig::setP25Enabled(
+        cfg.getInt("p25_enabled", 0) != 0);
+
+    ProtocolConfig::setM17Enabled(
+        cfg.getInt("m17_enabled", 0) != 0);
+
     ProtocolPorts::setDStarPort(
         cfg.getInt("dstar_port", 9000));
 
@@ -93,6 +102,21 @@ int main() {
         std::to_string(ProtocolPorts::ysfPort()) +
         " DMR=" +
         std::to_string(ProtocolPorts::dmrPort()));
+
+    Logger::log(INFO,
+        "Protocol enabled:"
+        " DSTAR=" +
+        std::to_string(ProtocolConfig::dstarEnabled()) +
+        " YSF=" +
+        std::to_string(ProtocolConfig::ysfEnabled()) +
+        " DMR=" +
+        std::to_string(ProtocolConfig::dmrEnabled()) +
+        " NXDN=" +
+        std::to_string(ProtocolConfig::nxdnEnabled()) +
+        " P25=" +
+        std::to_string(ProtocolConfig::p25Enabled()) +
+        " M17=" +
+        std::to_string(ProtocolConfig::m17Enabled()));
 
     for (const auto& listener :
          ProtocolListenerRegistry::listeners())
