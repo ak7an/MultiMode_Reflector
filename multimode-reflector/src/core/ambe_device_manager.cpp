@@ -43,9 +43,25 @@ bool AMBEDeviceManager::initialize(
     m_status.encodeResponsive =
         false;
 
+    if (decodeOk)
+    {
+        m_status.decodeResponsive =
+            AMBEProtocol::probe(
+                m_decodePort);
+    }
+
+    if (encodeOk)
+    {
+        m_status.encodeResponsive =
+            AMBEProtocol::probe(
+                m_encodePort);
+    }
+
     m_ready =
         decodeOk &&
-        encodeOk;
+        encodeOk &&
+        m_status.decodeResponsive &&
+        m_status.encodeResponsive;
 
     m_status.ready =
         m_ready;
