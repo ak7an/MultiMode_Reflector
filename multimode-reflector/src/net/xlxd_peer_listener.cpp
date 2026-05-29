@@ -144,6 +144,13 @@ static void listenerThread()
                                 handshakeData.reflector,
                                 handshakeData.module))
                         {
+                            registry->establishSession(
+                                ProtocolType::DSTAR,
+                                host,
+                                handshakeData.reflector,
+                                handshakeData.module,
+                                handshakeData.protocolVersion);
+
                             Logger::log(INFO,
                                 "XLXD peer session established: " +
                                 handshakeData.reflector +

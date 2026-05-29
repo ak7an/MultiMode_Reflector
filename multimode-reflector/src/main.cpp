@@ -193,8 +193,17 @@ int main() {
     }
 
     Logger::log(INFO, "Reflector shutting down...");
+
     timer.stop();
+
+    if (XLXDPeerConfig::enabled())
+    {
+        XLXDPeerMonitor::stop();
+        XLXDPeerListener::stop();
+    }
+
     MediaOutputWorker::stop();
+
     sleep(1);
 
     return 0;

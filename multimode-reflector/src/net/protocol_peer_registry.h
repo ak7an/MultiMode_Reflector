@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <cstdint>
 
 #include "protocol_peer.h"
 
@@ -28,6 +29,13 @@ public:
         int port,
         const std::string& reflector,
         char module);
+
+    bool establishSession(
+        ProtocolType proto,
+        const std::string& host,
+        const std::string& reflector,
+        char module,
+        uint32_t protocolVersion);
 
     void updatePeerTimeouts(
         ProtocolType proto,

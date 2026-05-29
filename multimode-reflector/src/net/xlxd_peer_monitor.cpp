@@ -73,9 +73,18 @@ static void monitorThread()
                 handshakePacket);
         }
 
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(
-                XLXDPeerConfig::pollIntervalMs()));
+        int sleptMs = 0;
+        int intervalMs =
+            XLXDPeerConfig::pollIntervalMs();
+
+        while (g_running &&
+               sleptMs < intervalMs)
+        {
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(100));
+
+            sleptMs += 100;
+        }
     }
 
     Logger::log(INFO,

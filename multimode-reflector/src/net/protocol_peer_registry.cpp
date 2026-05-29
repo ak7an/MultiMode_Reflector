@@ -121,6 +121,55 @@ bool ProtocolPeerRegistry::markPeerReceivedValidated(
     return false;
 }
 
+bool ProtocolPeerRegistry::establishSession(
+    ProtocolType proto,
+    const std::string& host,
+    const std::string& reflector,
+    char module,
+    uint32_t protocolVersion)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for (auto& peer : m_peers)
+    {
+        if (peer.protocol != proto)
+        {
+            continue;
+        }
+
+        if (peer.host != host)
+        {
+            continue;
+        }
+
+        if (peer.reflector != reflector)
+        {
+            continue;
+        }
+
+        if (peer.module != module)
+        {
+            continue;
+        }
+
+        peer.sessionEstablished = true;
+        peer.protocolVersion = protocolVersion;
+
+        Logger::log(INFO,
+            "XLXD peer session recorded: " +
+            reflector + "/" +
+            std::string(1, module) +
+            " VERSION=" +
+            std::to_string(protocolVersion));
+
+        return true;
+    }
+
+    return false;
+}
+
+
+
 void ProtocolPeerRegistry::updatePeerTimeouts(
     ProtocolType proto,
     int timeoutMs)

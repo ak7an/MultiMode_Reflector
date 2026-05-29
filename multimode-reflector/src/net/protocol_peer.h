@@ -3,6 +3,7 @@
 #include <string>
 #include <netinet/in.h>
 #include <chrono>
+#include <cstdint>
 
 #include "../protocol/protocol_definitions.h"
 
@@ -28,4 +29,8 @@ struct ProtocolPeer
         lastPollReceived {};
 
     bool connected = false;
+
+    bool sessionEstablished = false;
+
+    uint32_t protocolVersion = 0;
 };
