@@ -10,6 +10,8 @@
 
 #include "../core/logger.h"
 #include "../core/xlxd_peer_config.h"
+#include "../core/media_output_queue.h"
+#include "../core/media_frame_type.h"
 #include "global_peer_registry.h"
 #include "xlxd_poll_packet.h"
 #include "xlxd_handshake_packet.h"
@@ -188,6 +190,39 @@ static void listenerThread()
                         {
                             Logger::log(INFO,
                                 "XLXD frame accepted: REFLECTOR=" +
+                                frameData.reflector +
+                                " MODULE=" +
+                                std::string(1, frameData.module) +
+                                " PAYLOAD_LEN=" +
+                                std::to_string(
+                                    frameData.payload.size()));
+
+                            MediaFrame mediaFrame;
+                            mediaFrame.protocol =
+                                MediaProtocol::DSTAR;
+                            mediaFrame.frameType =
+                                MediaFrameType::VOICE;
+                            mediaFrame.streamId =
+                                0;
+                            mediaFrame.sourceCallsign =
+                                frameData.reflector;
+                            mediaFrame.sequence =
+                                0;
+                            mediaFrame.endOfTransmission =
+                                false;
+                            mediaFrame.sourcePeer =
+                                host + ":" +
+                                std::to_string(port);
+                            mediaFrame.payload =
+                                frameData.payload;
+                            mediaFrame.createdAt =
+                                std::chrono::steady_clock::now();
+
+                            MediaOutputQueue::push(
+                                mediaFrame);
+
+                            Logger::log(INFO,
+                                "XLXD frame queued to MediaOutputQueue: REFLECTOR=" +
                                 frameData.reflector +
                                 " MODULE=" +
                                 std::string(1, frameData.module) +
