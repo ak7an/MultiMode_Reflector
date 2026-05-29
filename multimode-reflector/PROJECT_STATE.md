@@ -12,6 +12,9 @@ Latest Confirmed Commit:
 9328793 — Add XLXD peer listener lifecycle
 
 ---
+Latest Confirmed Commit:
+3c377c0 — Document development workflow and protocol configuration
+
 
 # Current Status
 
@@ -460,4 +463,190 @@ This establishes the future ability to run:
 - Any supported protocol combination
 
 without code changes.
+
+
+-------------------------------------------------------------------------------
+2026-05-28 PROGRESS UPDATE
+-------------------------------------------------------------------------------
+
+Major Milestone:
+XLXD peer traffic is now fully integrated into the reflector media pipeline.
+
+Completed:
+
+XLXD Session Layer
+------------------
+- Implemented XLXD poll packet build/parse support
+- Implemented XLXD handshake packet build/parse support
+- Added peer identity validation
+- Added reflector/module validation
+- Added protocol version tracking
+- Added session establishment tracking
+- Added session-required frame acceptance
+
+Verified:
+- Correct reflector accepted
+- Incorrect reflector rejected
+- Incorrect module rejected
+- Frames rejected without established session
+- Frames accepted after successful handshake
+
+XLXD Frame Transport
+--------------------
+- Implemented XLXD frame packet build/parse support
+- Added reflector identification
+- Added module identification
+- Added payload extraction
+
+Verified:
+- Valid frame acceptance
+- Invalid session rejection
+- Invalid reflector rejection
+- Invalid module rejection
+
+D-Star Network Integration
+--------------------------
+- XLXD payloads now validated using DStarNetworkFrame parser
+- Extracted stream ID
+- Extracted sequence number
+- Extracted voice payload
+
+MediaFrame now preserves:
+- Stream ID
+- Sequence Number
+- Source Reflector
+- Source Module
+- Source Peer
+- Payload
+
+Media Pipeline Integration
+--------------------------
+XLXD traffic now follows the same path as native protocol traffic:
+
+XLXD Frame
+  -> DStarNetworkFrame
+  -> MediaFrame
+  -> MediaRouter
+  -> TranscodingPolicy
+  -> Transcoder
+  -> MediaOutputQueue
+  -> MediaOutputWorker
+
+This replaces the earlier direct queue insertion model.
+
+Routing Metadata
+----------------
+Added MediaFrame routing context:
+
+- sourceReflector
+- sourceModule
+
+Verified propagation through:
+- XLXD Peer Listener
+- MediaOutputQueue
+- MediaOutputWorker
+- MediaRouter
+
+This metadata will support future routing policy decisions.
+
+Transcoding Policy Improvements
+-------------------------------
+Added protocol enable-state filtering.
+
+Before:
+D-Star traffic generated outputs for:
+- YSF
+- DMR
+- NXDN
+- P25
+- M17
+
+After:
+Only enabled protocols are generated.
+
+Verified Configuration:
+Enabled:
+- DSTAR
+- YSF
+- DMR
+
+Disabled:
+- NXDN
+- P25
+- M17
+
+Observed Output:
+D-Star -> YSF
+D-Star -> DMR
+
+No disabled protocol outputs generated.
+
+Loop Prevention
+---------------
+Implemented XLXD outbound route suppression.
+
+Purpose:
+Prevent internally generated traffic from being re-ingested
+as new XLXD peer traffic and creating routing loops.
+
+Verified by runtime testing.
+
+Shutdown Stability
+------------------
+Fixed:
+- XLXD listener shutdown
+- XLXD monitor shutdown
+- Thread cleanup sequencing
+
+Reflector now exits cleanly without aborts.
+
+Verified End-to-End Flow
+------------------------
+
+XLXD Poll
+  -> Handshake
+  -> Session Establishment
+  -> D-Star Network Frame Validation
+  -> MediaRouter
+  -> TranscodingPolicy
+  -> YSF Output
+  -> DMR Output
+  -> MediaOutputWorker
+
+Current Project Status
+----------------------
+
+Working:
+- XLXD Polling
+- XLXD Handshake
+- XLXD Session Management
+- XLXD Frame Transport
+- D-Star Frame Validation
+- Media Routing
+- Protocol-Aware Transcoding
+- YSF Output Generation
+- DMR Output Generation
+- Clean Shutdown
+
+Next Major Development Area
+---------------------------
+
+Routing Policy Engine
+
+Goal:
+
+Use sourceReflector and sourceModule metadata to perform
+configurable routing between:
+
+- D-Star Reflector Modules
+- YSF Rooms
+- DMR Talkgroups
+- NXDN Rooms
+- P25 Talkgroups
+- M17 Rooms
+
+This becomes the foundation for true multimode reflector operation.
+
+Estimated Overall Completion:
+~50%
 
