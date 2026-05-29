@@ -29,6 +29,7 @@
 #include "core/route_config.h"
 #include "core/protocol_ports.h"
 #include "core/xlxd_peer_config.h"
+#include "core/ambe_device_manager.h"
 
 static std::atomic<bool> running(true);
 
@@ -46,6 +47,17 @@ int main() {
     cfg.load("reflector.ini");
 
     Logger::init("reflector.log");
+
+    AMBEDeviceManager::initialize(
+        cfg.getString(
+            "ambe_decode_device",
+            "/dev/ttyUSB0"),
+        cfg.getString(
+            "ambe_encode_device",
+            "/dev/ttyUSB1"),
+        cfg.getInt(
+            "ambe_baud",
+            460800));
 
     Logger::log(INFO, "Reflector starting...");
     Logger::log(INFO,

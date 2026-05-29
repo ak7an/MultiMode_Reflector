@@ -4,19 +4,38 @@
 
 bool AMBEDeviceManager::m_ready = false;
 
-bool AMBEDeviceManager::initialize()
+SerialPort AMBEDeviceManager::m_decodePort;
+SerialPort AMBEDeviceManager::m_encodePort;
+
+bool AMBEDeviceManager::initialize(
+    const std::string& decodeDevice,
+    const std::string& encodeDevice,
+    int baudRate)
 {
-    /*
-     * Placeholder for future DVSI AMBE-3000 USB initialization.
-     *
-     * Target design:
-     * - AMBE device #1 handles decode path
-     * - AMBE device #2 handles encode path
-     */
-    m_ready = false;
+    bool decodeOk =
+        m_decodePort.openPort(
+            decodeDevice,
+            baudRate);
+
+    bool encodeOk =
+        m_encodePort.openPort(
+            encodeDevice,
+            baudRate);
+
+    m_ready =
+        decodeOk &&
+        encodeOk;
 
     Logger::log(INFO,
-        "AMBEDeviceManager initialized in stub mode");
+        "AMBEDeviceManager init:"
+        " DECODE=" +
+        decodeDevice +
+        " ENCODE=" +
+        encodeDevice +
+        " BAUD=" +
+        std::to_string(baudRate) +
+        " READY=" +
+        std::to_string(m_ready));
 
     return m_ready;
 }
