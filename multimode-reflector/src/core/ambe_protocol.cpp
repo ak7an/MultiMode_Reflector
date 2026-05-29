@@ -300,6 +300,19 @@ CodecFrame AMBEProtocol::decode(
         return input;
     }
 
+    if (input.payload.size() != 9)
+    {
+        Logger::log(WARN,
+            "AMBEProtocol decode skipped:"
+            " STREAMID=" +
+            std::to_string(input.streamId) +
+            " REASON=invalid D-Star AMBE payload size"
+            " PAYLOAD_LEN=" +
+            std::to_string(input.payload.size()));
+
+        return input;
+    }
+
     auto command =
         buildPacket(
             CMD_DECODE);
@@ -308,6 +321,8 @@ CodecFrame AMBEProtocol::decode(
         "AMBEProtocol decode:"
         " STREAMID=" +
         std::to_string(input.streamId) +
+        " PAYLOAD_LEN=" +
+        std::to_string(input.payload.size()) +
         " TX_LEN=" +
         std::to_string(command.size()));
 
@@ -336,6 +351,17 @@ CodecFrame AMBEProtocol::encode(
         return input;
     }
 
+    if (input.payload.empty())
+    {
+        Logger::log(WARN,
+            "AMBEProtocol encode skipped:"
+            " STREAMID=" +
+            std::to_string(input.streamId) +
+            " REASON=empty PCM/codec payload");
+
+        return input;
+    }
+
     auto command =
         buildPacket(
             CMD_ENCODE);
@@ -344,6 +370,8 @@ CodecFrame AMBEProtocol::encode(
         "AMBEProtocol encode:"
         " STREAMID=" +
         std::to_string(input.streamId) +
+        " PAYLOAD_LEN=" +
+        std::to_string(input.payload.size()) +
         " TX_LEN=" +
         std::to_string(command.size()));
 
@@ -376,14 +404,44 @@ bool AMBEProtocol::readResponse(
     SerialPort& port,
     std::vector<uint8_t>& response)
 {
-    bool result =
-        port.readBytes(
-            response,
-            512,
-            100);
+    response.clear();
 
-    if (result)
+    std::vector<uint8_t> chunk;
+
+    for (int attempt = 0;
+         attempt < 10;
+         ++attempt)
     {
+        if (!port.readBytes(
+                chunk,
+                512,
+                50))
+        {
+            continue;
+        }
+
+        response.insert(
+            response.end(),
+            chunk.begin(),
+            chunk.end());
+
+        if (response.size() < 4)
+        {
+            continue;
+        }
+
+        uint16_t length =
+            (static_cast<uint16_t>(response[1]) << 8) |
+             static_cast<uint16_t>(response[2]);
+
+        size_t expectedSize =
+            static_cast<size_t>(length) + 4;
+
+        if (response.size() < expectedSize)
+        {
+            continue;
+        }
+
         Logger::log(INFO,
             "AMBE RX: " +
             HexDump::toHex(response));
@@ -393,6 +451,13 @@ bool AMBEProtocol::readResponse(
                 response);
 
         return parsed.valid;
+    }
+
+    if (!response.empty())
+    {
+        Logger::log(WARN,
+            "AMBE partial packet: LEN=" +
+            std::to_string(response.size()));
     }
 
     return false;
