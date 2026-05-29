@@ -1,6 +1,8 @@
 #include "transcoder.h"
 
+#include "codec_router.h"
 #include "logger.h"
+
 #include <chrono>
 
 static std::string protocolToString(
@@ -36,7 +38,7 @@ MediaFrame Transcoder::transcode(
     MediaProtocol targetProtocol)
 {
     Logger::log(INFO,
-        "Transcoder stub:"
+        "Transcoder codec path:"
         " FROM=" +
         protocolToString(input.protocol) +
         " TO=" +
@@ -46,14 +48,32 @@ MediaFrame Transcoder::transcode(
         " SEQ=" +
         std::to_string(input.sequence));
 
+    CodecFrame codec =
+        CodecRouter::decode(
+            input);
+
     MediaFrame output =
-        input;
+        CodecRouter::encode(
+            codec,
+            targetProtocol);
+
+    output.frameType =
+        input.frameType;
+
+    output.sourceCallsign =
+        input.sourceCallsign;
+
+    output.sourcePeer =
+        input.sourcePeer;
+
+    output.sourceReflector =
+        input.sourceReflector;
+
+    output.sourceModule =
+        input.sourceModule;
 
     output.createdAt =
         std::chrono::steady_clock::now();
-
-    output.protocol =
-        targetProtocol;
 
     return output;
 }
