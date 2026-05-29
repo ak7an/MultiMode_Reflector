@@ -169,14 +169,41 @@ static void listenerThread()
                             static_cast<size_t>(received),
                             frameData))
                     {
-                        Logger::log(INFO,
-                            "XLXD frame received: REFLECTOR=" +
-                            frameData.reflector +
-                            " MODULE=" +
-                            std::string(1, frameData.module) +
-                            " PAYLOAD_LEN=" +
-                            std::to_string(
-                                frameData.payload.size()));
+                        auto* registry =
+                            GlobalPeerRegistry::registry();
+
+                        bool accepted = false;
+
+                        if (registry != nullptr)
+                        {
+                            accepted =
+                                registry->isSessionEstablished(
+                                    ProtocolType::DSTAR,
+                                    host,
+                                    frameData.reflector,
+                                    frameData.module);
+                        }
+
+                        if (accepted)
+                        {
+                            Logger::log(INFO,
+                                "XLXD frame accepted: REFLECTOR=" +
+                                frameData.reflector +
+                                " MODULE=" +
+                                std::string(1, frameData.module) +
+                                " PAYLOAD_LEN=" +
+                                std::to_string(
+                                    frameData.payload.size()));
+                        }
+                        else
+                        {
+                            Logger::log(WARN,
+                                "XLXD frame rejected: REFLECTOR=" +
+                                frameData.reflector +
+                                " MODULE=" +
+                                std::string(1, frameData.module) +
+                                " REASON=session not established");
+                        }
                     }
                 }
             }

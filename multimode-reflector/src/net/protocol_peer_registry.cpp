@@ -170,6 +170,31 @@ bool ProtocolPeerRegistry::establishSession(
 
 
 
+bool ProtocolPeerRegistry::isSessionEstablished(
+    ProtocolType proto,
+    const std::string& host,
+    const std::string& reflector,
+    char module)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    for (const auto& peer : m_peers)
+    {
+        if (peer.protocol == proto &&
+            peer.host == host &&
+            peer.reflector == reflector &&
+            peer.module == module)
+        {
+            return peer.connected &&
+                   peer.sessionEstablished;
+        }
+    }
+
+    return false;
+}
+
+
+
 void ProtocolPeerRegistry::updatePeerTimeouts(
     ProtocolType proto,
     int timeoutMs)

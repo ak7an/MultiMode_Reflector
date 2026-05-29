@@ -37,6 +37,12 @@ public:
         char module,
         uint32_t protocolVersion);
 
+    bool isSessionEstablished(
+        ProtocolType proto,
+        const std::string& host,
+        const std::string& reflector,
+        char module);
+
     void updatePeerTimeouts(
         ProtocolType proto,
         int timeoutMs);
