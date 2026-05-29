@@ -218,6 +218,10 @@ static void listenerThread()
                             mediaFrame.sourcePeer =
                                 host + ":" +
                                 std::to_string(port);
+                            mediaFrame.sourceReflector =
+                                frameData.reflector;
+                            mediaFrame.sourceModule =
+                                frameData.module;
                             mediaFrame.createdAt =
                                 std::chrono::steady_clock::now();
 

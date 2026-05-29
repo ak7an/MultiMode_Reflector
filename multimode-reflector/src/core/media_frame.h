@@ -34,6 +34,10 @@ struct MediaFrame {
 
     std::string sourcePeer;
 
+    std::string sourceReflector;
+
+    char sourceModule = 'A';
+
     std::vector<uint8_t> payload;
 
     std::chrono::steady_clock::time_point createdAt;
