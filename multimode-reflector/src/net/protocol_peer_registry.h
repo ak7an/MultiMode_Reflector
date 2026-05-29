@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <string>
+#include <mutex>
 
 #include "protocol_peer.h"
 
@@ -20,7 +22,12 @@ public:
         const std::string& host,
         int port);
 
+    void updatePeerTimeouts(
+        ProtocolType proto,
+        int timeoutMs);
+
 private:
 
     std::vector<ProtocolPeer> m_peers;
+    std::mutex m_mutex;
 };

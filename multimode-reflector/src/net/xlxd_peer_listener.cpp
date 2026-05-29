@@ -5,10 +5,12 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <cstring>
 
 #include "../core/logger.h"
 #include "../core/xlxd_peer_config.h"
+#include "global_peer_registry.h"
 
 static std::atomic<bool> g_peerListenerRunning(false);
 static std::thread g_peerListenerThread;
@@ -66,8 +68,22 @@ static void listenerThread()
 
         if (received > 0)
         {
+            char hostBuffer[INET_ADDRSTRLEN] {};
+            inet_ntop(
+                AF_INET,
+                &(from.sin_addr),
+                hostBuffer,
+                sizeof(hostBuffer));
+
+            std::string host(hostBuffer);
+            int port =
+                ntohs(from.sin_port);
+
             Logger::log(INFO,
-                "XLXD peer packet received: LEN=" +
+                "XLXD peer packet received: FROM=" +
+                host + ":" +
+                std::to_string(port) +
+                " LEN=" +
                 std::to_string(received));
 
             if (received >= 4 &&
@@ -75,6 +91,17 @@ static void listenerThread()
             {
                 Logger::log(INFO,
                     "XLXD peer poll received");
+
+                auto* registry =
+                    GlobalPeerRegistry::registry();
+
+                if (registry != nullptr)
+                {
+                    registry->markPeerReceived(
+                        ProtocolType::DSTAR,
+                        host,
+                        port);
+                }
             }
         }
 

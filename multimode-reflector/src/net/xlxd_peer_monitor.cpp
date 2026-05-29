@@ -8,6 +8,7 @@
 #include "../core/xlxd_peer_config.h"
 #include "xlxd_poll_packet.h"
 #include "global_protocol_router.h"
+#include "global_peer_registry.h"
 
 static std::atomic<bool>
     g_running(false);
@@ -24,6 +25,16 @@ static void monitorThread()
     {
         Logger::log(INFO,
             "XLXD peer poll tick");
+
+        auto* registry =
+            GlobalPeerRegistry::registry();
+
+        if (registry != nullptr)
+        {
+            registry->updatePeerTimeouts(
+                ProtocolType::DSTAR,
+                XLXDPeerConfig::timeoutMs());
+        }
 
         auto packet =
             XLXDPollPacket::build();
