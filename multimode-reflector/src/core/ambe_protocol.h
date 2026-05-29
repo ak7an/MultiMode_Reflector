@@ -19,6 +19,9 @@ class AMBEProtocol
 {
 public:
 
+    static bool softReset(
+        SerialPort& port);
+
     static bool probe(
         SerialPort& port);
 

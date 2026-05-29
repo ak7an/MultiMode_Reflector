@@ -45,14 +45,24 @@ bool AMBEDeviceManager::initialize(
 
     if (decodeOk)
     {
+        bool resetOk =
+            AMBEProtocol::softReset(
+                m_decodePort);
+
         m_status.decodeResponsive =
+            resetOk &&
             AMBEProtocol::probe(
                 m_decodePort);
     }
 
     if (encodeOk)
     {
+        bool resetOk =
+            AMBEProtocol::softReset(
+                m_encodePort);
+
         m_status.encodeResponsive =
+            resetOk &&
             AMBEProtocol::probe(
                 m_encodePort);
     }

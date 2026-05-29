@@ -9,7 +9,8 @@ namespace
 
     constexpr uint8_t PKT_CONTROL = 0x00;
 
-    constexpr uint8_t CMD_PROBE  = 0x31;
+    constexpr uint8_t CMD_PROBE      = 0x31;
+    constexpr uint8_t CMD_SOFT_RESET = 0x34;
     constexpr uint8_t CMD_DECODE = 0x02;
     constexpr uint8_t CMD_ENCODE = 0x03;
 }
@@ -21,6 +22,9 @@ static std::string commandName(
     {
     case CMD_PROBE:
         return "PROBE";
+
+    case CMD_SOFT_RESET:
+        return "SOFT_RESET";
 
     case CMD_DECODE:
         return "DECODE";
@@ -188,6 +192,51 @@ AMBEResponse AMBEProtocol::parseResponse(
     }
 
     return response;
+}
+
+bool AMBEProtocol::softReset(
+    SerialPort& port)
+{
+    if (!port.isOpen())
+    {
+        Logger::log(INFO,
+            "AMBEProtocol soft reset skipped: port not open");
+
+        return false;
+    }
+
+    auto command =
+        buildPacket(
+            PKT_CONTROL,
+            { CMD_SOFT_RESET, 0x05, 0x00, 0x00, 0x0F, 0x00, 0x00 });
+
+    Logger::log(INFO,
+        "AMBEProtocol soft reset:"
+        " TX_LEN=" +
+        std::to_string(command.size()));
+
+    sendCommand(
+        port,
+        command);
+
+    std::vector<uint8_t> response;
+
+    if (readResponse(
+            port,
+            response))
+    {
+        Logger::log(INFO,
+            "AMBEProtocol soft reset response:"
+            " RX_LEN=" +
+            std::to_string(response.size()));
+
+        return true;
+    }
+
+    Logger::log(WARN,
+        "AMBEProtocol soft reset no response");
+
+    return false;
 }
 
 bool AMBEProtocol::probe(
