@@ -106,9 +106,15 @@ CodecFrame AMBEDeviceManager::decodeAMBE(
         " STREAMID=" +
         std::to_string(input.streamId));
 
-    return AMBEProtocol::decode(
-        m_decodePort,
-        input);
+    CodecFrame output =
+        AMBEProtocol::decode(
+            m_decodePort,
+            input);
+
+    output.codec =
+        CodecType::PCM;
+
+    return output;
 }
 
 CodecFrame AMBEDeviceManager::encodeAMBE(
@@ -119,9 +125,15 @@ CodecFrame AMBEDeviceManager::encodeAMBE(
         " STREAMID=" +
         std::to_string(input.streamId));
 
-    return AMBEProtocol::encode(
-        m_encodePort,
-        input);
+    CodecFrame output =
+        AMBEProtocol::encode(
+            m_encodePort,
+            input);
+
+    output.codec =
+        CodecType::AMBE;
+
+    return output;
 }
 
 
