@@ -161,9 +161,17 @@ bool SerialPort::writeBytes(
             data.data(),
             data.size());
 
-    return written ==
-           static_cast<ssize_t>(
-               data.size());
+    if (written !=
+        static_cast<ssize_t>(
+            data.size()))
+    {
+        return false;
+    }
+
+    tcdrain(
+        m_fd);
+
+    return true;
 }
 
 bool SerialPort::readBytes(

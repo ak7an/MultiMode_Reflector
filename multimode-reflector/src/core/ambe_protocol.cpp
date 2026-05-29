@@ -7,7 +7,9 @@ namespace
 {
     constexpr uint8_t AMBE_PACKET_START = 0x61;
 
-    constexpr uint8_t CMD_PROBE  = 0x01;
+    constexpr uint8_t PKT_CONTROL = 0x00;
+
+    constexpr uint8_t CMD_PROBE  = 0x31;
     constexpr uint8_t CMD_DECODE = 0x02;
     constexpr uint8_t CMD_ENCODE = 0x03;
 }
@@ -32,7 +34,7 @@ static std::string commandName(
 }
 
 static std::vector<uint8_t> buildPacket(
-    uint8_t command,
+    uint8_t packetType,
     const std::vector<uint8_t>& payload = {})
 {
     std::vector<uint8_t> packet;
@@ -42,7 +44,7 @@ static std::vector<uint8_t> buildPacket(
 
     uint16_t length =
         static_cast<uint16_t>(
-            payload.size() + 1);
+            payload.size());
 
     packet.push_back(
         (length >> 8) & 0xff);
@@ -51,7 +53,7 @@ static std::vector<uint8_t> buildPacket(
         length & 0xff);
 
     packet.push_back(
-        command);
+        packetType);
 
     packet.insert(
         packet.end(),
@@ -90,7 +92,7 @@ bool AMBEProtocol::validatePacket(
 
     size_t expectedSize =
         static_cast<size_t>(
-            length) + 3;
+            length) + 4;
 
     if (packet.size() != expectedSize)
     {
@@ -130,7 +132,7 @@ AMBEResponse AMBEProtocol::parseResponse(
         true;
 
     response.command =
-        packet[3];
+        packet.size() > 4 ? packet[4] : packet[3];
 
     if (packet.size() > 4)
     {
@@ -164,7 +166,8 @@ bool AMBEProtocol::probe(
 
     auto command =
         buildPacket(
-            CMD_PROBE);
+            PKT_CONTROL,
+            { CMD_PROBE, 0x2F, 0x1D });
 
     Logger::log(INFO,
         "AMBEProtocol probe:"
