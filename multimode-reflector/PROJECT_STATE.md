@@ -1443,3 +1443,230 @@ Status:
 - Voice payload currently placeholder
 - Real YSF voice frame generation still pending
 
+
+-------------------------------------------------------------------------------
+UPDATE — DMR VOICE FRAME LAYER
+-------------------------------------------------------------------------------
+
+Latest Confirmed Commit:
+<replace with commit hash>
+
+Implemented:
+
+- DMRVoiceFrame abstraction
+- Separation of DMR voice payload handling from
+  DMR network transport handling
+- DMRNetworkBuilder now delegates voice payload
+  construction to DMRVoiceFrame
+
+Current DMR Architecture:
+
+MediaFrame
+    ↓
+DMRVoiceFrame
+    ↓
+DMRNetworkBuilder
+    ↓
+DMR Packet
+
+Status:
+
+- Architecture layer complete
+- Voice payload currently placeholder
+- Real DMR burst construction still pending
+
+-------------------------------------------------------------------------------
+CURRENT PROTOCOL STATUS
+-------------------------------------------------------------------------------
+
+D-Star:
+- Most mature implementation
+- Hardware transcoding operational
+
+YSF:
+- Voice layer abstraction complete
+- Network layer abstraction complete
+- Real voice frame generation pending
+
+DMR:
+- Voice layer abstraction complete
+- Network layer abstraction complete
+- Real burst generation pending
+
+NXDN:
+- Not yet implemented
+
+P25:
+- Not yet implemented
+
+M17:
+- Not yet implemented
+
+
+-------------------------------------------------------------------------------
+CURRENT STOP POINT
+-------------------------------------------------------------------------------
+
+Latest Confirmed Commit:
+b49938a and later
+
+Branch:
+next-feature
+
+Project Direction:
+
+Single-module multimode digital voice reflector.
+
+Supported Protocol Targets:
+
+- D-Star
+- YSF
+- DMR
+- NXDN
+- P25
+- M17
+
+Architecture Goal:
+
+Protocol Frame
+      ↓
+Protocol Parser
+      ↓
+Voice Payload
+      ↓
+ThumbDV Decode
+      ↓
+PCM Audio Domain
+      ↓
+AudioLevelManager
+      ↓
+ThumbDV Encode
+      ↓
+Voice Payload
+      ↓
+Protocol Voice Frame
+      ↓
+Protocol Network Frame
+
+-------------------------------------------------------------------------------
+COMPLETED MILESTONES
+-------------------------------------------------------------------------------
+
+Hardware Codec Engine
+
+- Dual ThumbDV devices detected
+- Dedicated decode dongle assigned
+- Dedicated encode dongle assigned
+- ThumbDV reset/probe operational
+- Real AMBE decode operational
+- Real PCM generation operational
+- Real AMBE encode operational
+- AMBE → PCM → AMBE round-trip verified
+
+Audio Domain
+
+- PCMFrame transport layer implemented
+- AudioLevelManager integrated
+- AudioLevelConfig integrated
+- PCM normalization path operational
+
+Protocol Architecture
+
+- ProtocolCodecMapper implemented
+- YSFVoiceFrame abstraction implemented
+- DMRVoiceFrame abstraction implemented
+
+Current Voice Paths
+
+D-Star → PCM → YSF
+
+D-Star AMBE
+      ↓
+ThumbDV Decode
+      ↓
+PCM
+      ↓
+AudioLevelManager
+      ↓
+ProtocolCodecMapper
+      ↓
+YSFVoiceFrame
+      ↓
+YSFNetworkFrame
+
+D-Star → PCM → DMR
+
+D-Star AMBE
+      ↓
+ThumbDV Decode
+      ↓
+PCM
+      ↓
+AudioLevelManager
+      ↓
+ProtocolCodecMapper
+      ↓
+DMRVoiceFrame
+      ↓
+DMRNetworkBuilder
+
+-------------------------------------------------------------------------------
+IMPORTANT ARCHITECTURAL DECISION
+-------------------------------------------------------------------------------
+
+The project is no longer focused on
+"Protocol Codec Mapping".
+
+The ThumbDV hardware already provides the
+codec engine for AMBE-based protocols.
+
+The next major development phase is:
+
+PROTOCOL FRAME CONSTRUCTION
+
+The remaining work is making each protocol
+speak its native network format correctly.
+
+-------------------------------------------------------------------------------
+NEXT TASK
+-------------------------------------------------------------------------------
+
+Begin replacing placeholder YSF voice payload
+generation with protocol-correct YSF voice
+frame construction.
+
+Inspect first:
+
+src/protocol/ysf_encoder.cpp
+src/protocol/ysf_frame_mapper.cpp
+src/protocol/ysf_frame_mapper.h
+
+-------------------------------------------------------------------------------
+PROJECT ASSESSMENT
+-------------------------------------------------------------------------------
+
+Infrastructure:
+Nearly complete
+
+Completed:
+
+- Routing engine
+- Media framework
+- XLXD peering
+- ThumbDV integration
+- PCM audio domain
+- Audio normalization
+- Protocol abstraction layers
+
+Remaining:
+
+- Real YSF frame construction
+- Real DMR frame construction
+- Real NXDN frame construction
+- Real P25 frame construction
+- M17 Codec2 integration
+
+The project has successfully transitioned
+from hardware bring-up into protocol
+implementation.
+
