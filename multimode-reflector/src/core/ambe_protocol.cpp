@@ -1,6 +1,7 @@
 #include "ambe_protocol.h"
 
 #include "logger.h"
+#include "hex_dump.h"
 
 namespace
 {
@@ -161,6 +162,10 @@ bool AMBEProtocol::sendCommand(
     SerialPort& port,
     const std::vector<uint8_t>& command)
 {
+    Logger::log(INFO,
+        "AMBE TX: " +
+        HexDump::toHex(command));
+
     return port.writeBytes(
         command);
 }
@@ -169,8 +174,18 @@ bool AMBEProtocol::readResponse(
     SerialPort& port,
     std::vector<uint8_t>& response)
 {
-    return port.readBytes(
-        response,
-        512,
-        100);
+    bool result =
+        port.readBytes(
+            response,
+            512,
+            100);
+
+    if (result)
+    {
+        Logger::log(INFO,
+            "AMBE RX: " +
+            HexDump::toHex(response));
+    }
+
+    return result;
 }
