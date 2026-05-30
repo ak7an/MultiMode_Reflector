@@ -9,6 +9,11 @@
 class YSFVoiceFrame
 {
 public:
+    static constexpr size_t YSF_PAYLOAD_SIZE = 120;
+    static constexpr size_t YSF_SLOT_COUNT = 5;
+    static constexpr size_t YSF_SLOT_SIZE = 18;
+    static constexpr size_t AMBE_BYTES_PER_SLOT = 9;
+
     static std::vector<uint8_t> build(
         const MediaFrame& frame);
 
