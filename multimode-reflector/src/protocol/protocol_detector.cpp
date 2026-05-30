@@ -27,5 +27,10 @@ ProtocolType ProtocolDetector::detect(
         return ProtocolType::DMR;
     }
 
+    if (std::memcmp(data, "NXDN", 4) == 0)
+    {
+        return ProtocolType::NXDN;
+    }
+
     return ProtocolType::UNKNOWN;
 }

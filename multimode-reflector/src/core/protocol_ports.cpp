@@ -3,6 +3,7 @@
 int ProtocolPorts::m_dstarPort = 9000;
 int ProtocolPorts::m_ysfPort = 42000;
 int ProtocolPorts::m_dmrPort = 62031;
+int ProtocolPorts::m_nxdnPort = 41400;
 
 void ProtocolPorts::setDStarPort(int port)
 {
@@ -32,4 +33,14 @@ int ProtocolPorts::ysfPort()
 int ProtocolPorts::dmrPort()
 {
     return m_dmrPort;
+}
+
+void ProtocolPorts::setNXDNPort(int port)
+{
+    m_nxdnPort = port;
+}
+
+int ProtocolPorts::nxdnPort()
+{
+    return m_nxdnPort;
 }

@@ -78,6 +78,8 @@ add_executable(reflector
     src/core/transcoding_policy.cpp
     src/protocol/dmr_protocol.cpp
     src/protocol/dmr_network_frame.cpp
+    src/protocol/nxdn_protocol.cpp
+    src/protocol/nxdn_scaffold_frame.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp

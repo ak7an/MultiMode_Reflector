@@ -29,5 +29,12 @@ ProtocolListenerRegistry::listeners()
         });
     }
 
+    if (ProtocolConfig::nxdnEnabled()) {
+        result.push_back({
+            ProtocolType::NXDN,
+            ProtocolPorts::nxdnPort()
+        });
+    }
+
     return result;
 }

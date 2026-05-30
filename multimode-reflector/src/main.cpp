@@ -23,6 +23,7 @@
 #include "protocol/dstar_protocol.h"
 #include "protocol/ysf_protocol.h"
 #include "protocol/dmr_protocol.h"
+#include "protocol/nxdn_protocol.h"
 #include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
 #include "core/protocol_config.h"
@@ -211,6 +212,9 @@ int main() {
     ProtocolPorts::setDMRPort(
         cfg.getInt("dmr_port", 62031));
 
+    ProtocolPorts::setNXDNPort(
+        cfg.getInt("nxdn_port", 41400));
+
     Logger::log(INFO,
         "Protocol ports:"
         " DSTAR=" +
@@ -218,7 +222,9 @@ int main() {
         " YSF=" +
         std::to_string(ProtocolPorts::ysfPort()) +
         " DMR=" +
-        std::to_string(ProtocolPorts::dmrPort()));
+        std::to_string(ProtocolPorts::dmrPort()) +
+        " NXDN=" +
+        std::to_string(ProtocolPorts::nxdnPort()));
 
     Logger::log(INFO,
         "Protocol enabled:"
@@ -296,6 +302,13 @@ int main() {
         ProtocolType::DMR,
         std::make_shared<
             DMRProtocol>());
+   }
+
+   if (ProtocolConfig::nxdnEnabled()) {
+       ProtocolManager::registerProtocol(
+        ProtocolType::NXDN,
+        std::make_shared<
+            NXDNProtocol>());
    }
 
     Timer timer;
