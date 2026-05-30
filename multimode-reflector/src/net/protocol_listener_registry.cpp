@@ -43,5 +43,12 @@ ProtocolListenerRegistry::listeners()
         });
     }
 
+    if (ProtocolConfig::m17Enabled()) {
+        result.push_back({
+            ProtocolType::M17,
+            ProtocolPorts::m17Port()
+        });
+    }
+
     return result;
 }

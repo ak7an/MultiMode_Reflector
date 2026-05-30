@@ -8,12 +8,14 @@ public:
     static void setDMRPort(int port);
     static void setNXDNPort(int port);
     static void setP25Port(int port);
+    static void setM17Port(int port);
 
     static int dstarPort();
     static int ysfPort();
     static int dmrPort();
     static int nxdnPort();
     static int p25Port();
+    static int m17Port();
 
 private:
     static int m_dstarPort;
@@ -21,4 +23,5 @@ private:
     static int m_dmrPort;
     static int m_nxdnPort;
     static int m_p25Port;
+    static int m_m17Port;
 };

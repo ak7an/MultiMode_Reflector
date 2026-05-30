@@ -37,5 +37,10 @@ ProtocolType ProtocolDetector::detect(
         return ProtocolType::P25;
     }
 
+    if (std::memcmp(data, "M17D", 4) == 0)
+    {
+        return ProtocolType::M17;
+    }
+
     return ProtocolType::UNKNOWN;
 }

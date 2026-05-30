@@ -82,6 +82,8 @@ add_executable(reflector
     src/protocol/nxdn_scaffold_frame.cpp
     src/protocol/p25_protocol.cpp
     src/protocol/p25_scaffold_frame.cpp
+    src/protocol/m17_protocol.cpp
+    src/protocol/m17_scaffold_frame.cpp
     src/util/config.cpp
     src/system/timer.cpp
     src/core/media_router.cpp

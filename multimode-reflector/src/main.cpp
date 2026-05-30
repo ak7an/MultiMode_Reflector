@@ -25,6 +25,7 @@
 #include "protocol/dmr_protocol.h"
 #include "protocol/nxdn_protocol.h"
 #include "protocol/p25_protocol.h"
+#include "protocol/m17_protocol.h"
 #include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
 #include "core/protocol_config.h"
@@ -219,6 +220,9 @@ int main() {
     ProtocolPorts::setP25Port(
         cfg.getInt("p25_port", 41000));
 
+    ProtocolPorts::setM17Port(
+        cfg.getInt("m17_port", 17000));
+
     Logger::log(INFO,
         "Protocol ports:"
         " DSTAR=" +
@@ -230,7 +234,9 @@ int main() {
         " NXDN=" +
         std::to_string(ProtocolPorts::nxdnPort()) +
         " P25=" +
-        std::to_string(ProtocolPorts::p25Port()));
+        std::to_string(ProtocolPorts::p25Port()) +
+        " M17=" +
+        std::to_string(ProtocolPorts::m17Port()));
 
     Logger::log(INFO,
         "Protocol enabled:"
@@ -322,6 +328,13 @@ int main() {
         ProtocolType::P25,
         std::make_shared<
             P25Protocol>());
+   }
+
+   if (ProtocolConfig::m17Enabled()) {
+       ProtocolManager::registerProtocol(
+        ProtocolType::M17,
+        std::make_shared<
+            M17Protocol>());
    }
 
     Timer timer;
