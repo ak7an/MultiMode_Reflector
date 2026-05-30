@@ -1,5 +1,8 @@
 #include "ysf_fich.h"
 
+#include "protocol_bit_buffer.h"
+#include "protocol_crc.h"
+
 #include "../core/logger.h"
 
 #include <sstream>
@@ -15,9 +18,15 @@ namespace
     constexpr uint8_t DT_VOICE   = 0x02;
 
     uint8_t frameInformationFor(
-        MediaFrameType type)
+        const MediaFrame& frame)
     {
-        switch (type) {
+        if (frame.endOfTransmission ||
+            frame.frameType == MediaFrameType::VOICE_EOT)
+        {
+            return FI_EOT;
+        }
+
+        switch (frame.frameType) {
         case MediaFrameType::HEADER:
             return FI_HEADER;
 
@@ -53,6 +62,49 @@ namespace
 
         return ss.str();
     }
+
+    std::array<uint8_t, YSFFich::FICH_SIZE> packScaffold(
+        const YSFFichFields& f)
+    {
+        std::array<uint8_t, YSFFich::FICH_SIZE> fich{};
+
+        ProtocolBitBuffer bits;
+
+        bits.pushBits(f.frameInformation & 0x03, 2);
+        bits.pushBits(f.communicationType & 0x03, 2);
+        bits.pushBits(f.callMode & 0x0F, 4);
+
+        bits.pushBits(f.blockNumber & 0x0F, 4);
+        bits.pushBits(f.blockTotal & 0x0F, 4);
+
+        bits.pushBits(f.frameNumber & 0x0F, 4);
+        bits.pushBits(f.frameTotal & 0x0F, 4);
+
+        bits.pushBits(f.dataType & 0x03, 2);
+        bits.pushBits(f.mr & 0x03, 2);
+        bits.pushBits(f.voip & 0x01, 1);
+        bits.pushBits(f.dev & 0x07, 3);
+
+        bits.pushBits(f.sql & 0x0F, 4);
+        bits.pushBits(f.sq & 0x0F, 4);
+
+        const auto& packed =
+            bits.bytes();
+
+        for (size_t i = 0;
+             i < packed.size() && i < 5;
+             ++i)
+        {
+            fich[i] = packed[i];
+        }
+
+        fich[5] =
+            ProtocolCRC::crc8(
+                fich.data(),
+                5);
+
+        return fich;
+    }
 }
 
 YSFFichFields
@@ -63,18 +115,11 @@ YSFFich::fields(
 
     f.frameInformation =
         frameInformationFor(
-            frame.frameType);
+            frame);
 
     f.communicationType = CS_DIGITAL;
     f.callMode = CM_OPEN;
     f.dataType = DT_VOICE;
-
-    /*
-     * Scaffold frame numbering.
-     *
-     * These are now explicit YSF FICH concepts.
-     * The exact Yaesu bit layout and protected encoding will be added later.
-     */
 
     f.blockNumber =
         static_cast<uint8_t>(
@@ -101,69 +146,19 @@ std::array<uint8_t, YSFFich::FICH_SIZE>
 YSFFich::build(
     const MediaFrame& frame)
 {
-    std::array<uint8_t, FICH_SIZE> fich{};
-
     const YSFFichFields f =
         fields(frame);
 
-    /*
-     * Temporary structured scaffold packing.
-     *
-     * This replaces the previous loose six-byte synthetic FICH.
-     *
-     * Current layout:
-     *
-     * byte 0: FI / CS / CM
-     * byte 1: BN / BT
-     * byte 2: FN / FT
-     * byte 3: DT / MR / VOIP / DEV
-     * byte 4: SQL / SQ
-     * byte 5: EOT marker
-     *
-     * Future layout:
-     *
-     * - real YSF FICH bit packing
-     * - CRC
-     * - convolutional encoding
-     * - interleaving
-     */
-
-    fich[0] =
-        static_cast<uint8_t>(
-            ((f.frameInformation & 0x03) << 6) |
-            ((f.communicationType & 0x03) << 4) |
-            ((f.callMode & 0x0F)));
-
-    fich[1] =
-        static_cast<uint8_t>(
-            ((f.blockNumber & 0x0F) << 4) |
-            ((f.blockTotal & 0x0F)));
-
-    fich[2] =
-        static_cast<uint8_t>(
-            ((f.frameNumber & 0x0F) << 4) |
-            ((f.frameTotal & 0x0F)));
-
-    fich[3] =
-        static_cast<uint8_t>(
-            ((f.dataType & 0x03) << 6) |
-            ((f.mr & 0x03) << 4) |
-            ((f.voip & 0x01) << 3) |
-            ((f.dev & 0x07)));
-
-    fich[4] =
-        static_cast<uint8_t>(
-            ((f.sql & 0x0F) << 4) |
-            ((f.sq & 0x0F)));
-
-    fich[5] =
-        frame.endOfTransmission ? 1 : 0;
+    auto fich =
+        packScaffold(f);
 
     Logger::log(INFO,
         "YSFFich build:"
         " STREAMID=" +
         std::to_string(frame.streamId) +
-        fieldSummary(f));
+        fieldSummary(f) +
+        " CRC8=" +
+        std::to_string(fich[5]));
 
     return fich;
 }
@@ -178,6 +173,14 @@ bool YSFFich::parse(
 
     if (length < FICH_SIZE)
         return false;
+
+    const uint8_t expectedCrc =
+        ProtocolCRC::crc8(
+            data,
+            5);
+
+    const bool crcValid =
+        expectedCrc == data[5];
 
     YSFFichFields f;
 
@@ -237,13 +240,20 @@ bool YSFFich::parse(
         f.frameNumber;
 
     frame.endOfTransmission =
-        data[5] != 0;
+        f.frameInformation == FI_EOT;
 
-    Logger::log(INFO,
+    Logger::log(
+        crcValid ? INFO : WARN,
         "YSFFich parse:"
         " STREAMID=" +
         std::to_string(frame.streamId) +
-        fieldSummary(f));
+        fieldSummary(f) +
+        " CRC8_EXPECTED=" +
+        std::to_string(expectedCrc) +
+        " CRC8_RECEIVED=" +
+        std::to_string(data[5]) +
+        " CRC_VALID=" +
+        std::to_string(crcValid ? 1 : 0));
 
     return true;
 }
