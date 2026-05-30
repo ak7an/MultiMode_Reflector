@@ -80,6 +80,7 @@ add_executable(reflector
     src/protocol/dmr_network_frame.cpp
     src/protocol/nxdn_protocol.cpp
     src/protocol/nxdn_scaffold_frame.cpp
+    src/protocol/nxdn_network_builder.cpp
     src/protocol/p25_protocol.cpp
     src/protocol/p25_scaffold_frame.cpp
     src/protocol/m17_protocol.cpp

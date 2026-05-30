@@ -3,6 +3,7 @@
 #include "ysf_encoder.h"
 #include "dstar_encoder.h"
 #include "dmr_network_builder.h"
+#include "nxdn_network_builder.h"
 #include "../core/logger.h"
 
 std::vector<uint8_t> ProtocolEncoder::encode(
@@ -26,6 +27,13 @@ std::vector<uint8_t> ProtocolEncoder::encode(
         MediaProtocol::DMR)
     {
         return DMRNetworkBuilder::build(
+            frame);
+    }
+
+    if (frame.protocol ==
+        MediaProtocol::NXDN)
+    {
+        return NXDNNetworkBuilder::build(
             frame);
     }
 

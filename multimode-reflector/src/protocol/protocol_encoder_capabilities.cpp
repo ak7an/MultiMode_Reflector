@@ -8,6 +8,7 @@ bool ProtocolEncoderCapabilities::canEncode(
     case MediaProtocol::DSTAR:
     case MediaProtocol::YSF:
     case MediaProtocol::DMR:
+    case MediaProtocol::NXDN:
         return true;
 
     default:

@@ -235,6 +235,10 @@ void MediaOutputWorker::run()
                 targetProto = ProtocolType::DMR;
                 break;
 
+            case MediaProtocol::NXDN:
+                targetProto = ProtocolType::NXDN;
+                break;
+
             default:
                 break;
             }
