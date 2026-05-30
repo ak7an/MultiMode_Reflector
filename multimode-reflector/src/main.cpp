@@ -24,6 +24,7 @@
 #include "protocol/ysf_protocol.h"
 #include "protocol/dmr_protocol.h"
 #include "protocol/nxdn_protocol.h"
+#include "protocol/p25_protocol.h"
 #include "protocol/ysf_encoder.h"
 #include "core/jitter_buffer.h"
 #include "core/protocol_config.h"
@@ -215,6 +216,9 @@ int main() {
     ProtocolPorts::setNXDNPort(
         cfg.getInt("nxdn_port", 41400));
 
+    ProtocolPorts::setP25Port(
+        cfg.getInt("p25_port", 41000));
+
     Logger::log(INFO,
         "Protocol ports:"
         " DSTAR=" +
@@ -224,7 +228,9 @@ int main() {
         " DMR=" +
         std::to_string(ProtocolPorts::dmrPort()) +
         " NXDN=" +
-        std::to_string(ProtocolPorts::nxdnPort()));
+        std::to_string(ProtocolPorts::nxdnPort()) +
+        " P25=" +
+        std::to_string(ProtocolPorts::p25Port()));
 
     Logger::log(INFO,
         "Protocol enabled:"
@@ -309,6 +315,13 @@ int main() {
         ProtocolType::NXDN,
         std::make_shared<
             NXDNProtocol>());
+   }
+
+   if (ProtocolConfig::p25Enabled()) {
+       ProtocolManager::registerProtocol(
+        ProtocolType::P25,
+        std::make_shared<
+            P25Protocol>());
    }
 
     Timer timer;

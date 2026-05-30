@@ -36,5 +36,12 @@ ProtocolListenerRegistry::listeners()
         });
     }
 
+    if (ProtocolConfig::p25Enabled()) {
+        result.push_back({
+            ProtocolType::P25,
+            ProtocolPorts::p25Port()
+        });
+    }
+
     return result;
 }

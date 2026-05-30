@@ -32,5 +32,10 @@ ProtocolType ProtocolDetector::detect(
         return ProtocolType::NXDN;
     }
 
+    if (std::memcmp(data, "P25D", 4) == 0)
+    {
+        return ProtocolType::P25;
+    }
+
     return ProtocolType::UNKNOWN;
 }

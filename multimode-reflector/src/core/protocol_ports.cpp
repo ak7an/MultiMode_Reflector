@@ -4,6 +4,7 @@ int ProtocolPorts::m_dstarPort = 9000;
 int ProtocolPorts::m_ysfPort = 42000;
 int ProtocolPorts::m_dmrPort = 62031;
 int ProtocolPorts::m_nxdnPort = 41400;
+int ProtocolPorts::m_p25Port = 41000;
 
 void ProtocolPorts::setDStarPort(int port)
 {
@@ -43,4 +44,14 @@ void ProtocolPorts::setNXDNPort(int port)
 int ProtocolPorts::nxdnPort()
 {
     return m_nxdnPort;
+}
+
+void ProtocolPorts::setP25Port(int port)
+{
+    m_p25Port = port;
+}
+
+int ProtocolPorts::p25Port()
+{
+    return m_p25Port;
 }
