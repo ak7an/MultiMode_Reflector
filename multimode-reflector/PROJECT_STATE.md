@@ -1806,3 +1806,249 @@ Protocol construction work is now underway.
 Estimated Overall Completion:
 ~78%
 
+
+-------------------------------------------------------------------------------
+UPDATE — CURRENT STOP POINT — MULTIPROTOCOL SCAFFOLD + CODEC FAMILY CORRECTION
+-------------------------------------------------------------------------------
+
+Latest Confirmed Commits:
+
+d40f858 — Add M17 scaffold protocol ingest
+f8d8bc9 — Enable DMR scaffold encoder output
+e1d4942 — Enable NXDN scaffold encoder output
+
+High-Level Status
+-----------------
+
+The framework phase is now complete.
+
+The reflector now has scaffold ingress for all target protocol families:
+
+- D-Star
+- YSF
+- DMR
+- NXDN
+- P25
+- M17
+
+The reflector now has scaffold output for the AMBE-family protocols currently supported by the existing ThumbDV/AMBE path:
+
+- D-Star
+- YSF
+- DMR
+- NXDN
+
+Current Working Architecture
+----------------------------
+
+Protocol input
+    ↓
+Protocol detector
+    ↓
+Protocol handler
+    ↓
+MediaFrame
+    ↓
+MediaRouter
+    ↓
+Transcoder
+    ↓
+CodecRouter
+    ↓
+ThumbDV / AMBE decode
+    ↓
+PCMFrame
+    ↓
+AudioLevelManager
+    ↓
+ProtocolCodecMapper
+    ↓
+Protocol encoder
+    ↓
+MediaOutputWorker
+    ↓
+Debug UDP / protocol network router
+
+Verified Ingress
+----------------
+
+The following protocol inputs are now detected, parsed, and routed into the MediaFrame pipeline:
+
+- D-Star
+- YSF
+- DMR
+- NXDN
+- P25
+- M17
+
+Verified Output
+---------------
+
+The following scaffold output paths are now active:
+
+- D-Star output
+- YSF output
+- DMR output
+- NXDN output
+
+Verified runtime output examples include:
+
+- DStarEncoder synthetic bridge packet
+- YSFEncoder network packet
+- DMRVoiceFrame build
+- NXDNNetworkBuilder build
+
+Important Codec Correction
+--------------------------
+
+A critical architecture correction was identified before moving into P25 or M17 output work.
+
+The protocols do NOT all share the same codec family.
+
+Correct codec families:
+
+AMBE-family protocols:
+
+- D-Star
+- YSF
+- DMR
+- NXDN
+
+IMBE-family protocols:
+
+- P25
+
+Codec2-family protocols:
+
+- M17
+
+This means the current ThumbDV / AMBE hardware path is valid for:
+
+- D-Star
+- YSF
+- DMR
+- NXDN
+
+But it is NOT valid as the final codec path for:
+
+- P25
+- M17
+
+P25 requires an IMBE codec path.
+
+M17 requires a Codec2 codec path.
+
+Current P25 and M17 State
+-------------------------
+
+P25 scaffold ingress exists and works.
+
+M17 scaffold ingress exists and works.
+
+However, P25 and M17 should not be treated as ordinary AMBE output targets.
+
+Their current scaffold tests were useful for proving:
+
+- protocol listener registration
+- protocol detection
+- protocol handler flow
+- MediaFrame routing
+- transcoder fan-out behavior
+- output skip behavior
+
+But real P25 and real M17 implementation require separate codec-domain support.
+
+Current Protocol Matrix
+-----------------------
+
+D-Star:
+- Ingest: working
+- Transcode source: working
+- Output: working
+- Codec family: AMBE
+
+YSF:
+- Ingest: working
+- Transcode source: working
+- Output: working
+- Codec family: AMBE
+
+DMR:
+- Ingest: working
+- Transcode source: working
+- Output: working
+- Codec family: AMBE
+
+NXDN:
+- Ingest: working
+- Transcode source: working
+- Output: working
+- Codec family: AMBE
+
+P25:
+- Ingest: scaffold working
+- Transcode source: scaffold exercised
+- Output: intentionally not implemented
+- Codec family: IMBE
+- Next requirement: IMBE codec path
+
+M17:
+- Ingest: scaffold working
+- Transcode source: scaffold exercised
+- Output: intentionally not implemented
+- Codec family: Codec2
+- Next requirement: Codec2 codec path
+
+Important Do-Not-Do
+-------------------
+
+Do not implement P25 output by simply copying the AMBE/NXDN/DMR scaffold encoder pattern.
+
+Do not implement M17 output by simply copying the AMBE/NXDN/DMR scaffold encoder pattern.
+
+Do not treat all protocols as AMBE protocols.
+
+Next Engineering Step
+---------------------
+
+Before adding P25 or M17 output, introduce an explicit codec-family layer.
+
+Planned model:
+
+CodecFamily::AMBE
+CodecFamily::IMBE
+CodecFamily::CODEC2
+CodecFamily::UNKNOWN
+
+Expected mapping:
+
+DSTAR → AMBE
+YSF   → AMBE
+DMR   → AMBE
+NXDN  → AMBE
+P25   → IMBE
+M17   → CODEC2
+
+Planned policy change:
+
+- Allow AMBE ↔ AMBE through the current ThumbDV path
+- Block P25 output until IMBE support exists
+- Block M17 output until Codec2 support exists
+- Keep P25 and M17 ingest available for framework testing
+- Avoid pretending scaffold AMBE behavior is real P25 or real M17 transcoding
+
+Recommended Next Session Start
+------------------------------
+
+Begin by inspecting and modifying:
+
+- src/core/transcoding_policy.h
+- src/core/transcoding_policy.cpp
+- src/core/transcoding_targets.cpp
+- src/core/transcoder.cpp
+- src/core/codec_router.cpp
+
+Goal of next session:
+
+Add codec-family awareness and prevent invalid cross-codec assumptions.
+
