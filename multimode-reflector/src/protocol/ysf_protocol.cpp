@@ -7,25 +7,31 @@
 
 #include <cstring>
 
-static MediaFrameType frameTypeFromCode(
-    uint8_t code)
+namespace
 {
-    switch (code) {
+    constexpr const char* YSF_SYNTHETIC_MAGIC = "YSFB";
+    constexpr const char* YSF_SCAFFOLD_MAGIC  = "YSFD";
 
-    case 1:
-        return MediaFrameType::HEADER;
+    MediaFrameType frameTypeFromCode(
+        uint8_t code)
+    {
+        switch (code) {
 
-    case 2:
-        return MediaFrameType::VOICE;
+        case 1:
+            return MediaFrameType::HEADER;
 
-    case 3:
-        return MediaFrameType::VOICE_EOT;
+        case 2:
+            return MediaFrameType::VOICE;
 
-    case 4:
-        return MediaFrameType::CONTROL;
+        case 3:
+            return MediaFrameType::VOICE_EOT;
 
-    default:
-        return MediaFrameType::UNKNOWN;
+        case 4:
+            return MediaFrameType::CONTROL;
+
+        default:
+            return MediaFrameType::UNKNOWN;
+        }
     }
 }
 
@@ -39,14 +45,14 @@ ProtocolResult YSFProtocol::handle(
 
     MediaFrame frame{};
 
-    if (!parseSyntheticBridge(
+    if (!parseProjectBridgeFrame(
             data,
             length,
             peer,
             frame))
     {
         Logger::log(WARN,
-            "YSF packet rejected by parser");
+            "YSF packet rejected: unsupported YSF format");
 
         return result;
     }
@@ -56,7 +62,8 @@ ProtocolResult YSFProtocol::handle(
         " STREAMID=" +
         std::to_string(frame.streamId) +
         " SEQ=" +
-        std::to_string(frame.sequence));
+        std::to_string(frame.sequence) +
+        " NOTE=project-scaffold-format");
 
     MediaRouteResult routeResult =
         MediaRouter::route(
@@ -72,25 +79,26 @@ ProtocolResult YSFProtocol::handle(
     return result;
 }
 
-bool YSFProtocol::parseSyntheticBridge(
+bool YSFProtocol::parseProjectBridgeFrame(
     const uint8_t* data,
     size_t length,
     const std::string& peer,
     MediaFrame& frame)
 {
-    if (length < 15) {
+    if (data == nullptr)
         return false;
-    }
 
-    bool synthetic =
-        std::memcmp(data, "YSFB", 4) == 0;
-
-    bool network =
-        std::memcmp(data, "YSFD", 4) == 0;
-
-    if (!synthetic && !network) {
+    if (length < 15)
         return false;
-    }
+
+    const bool synthetic =
+        std::memcmp(data, YSF_SYNTHETIC_MAGIC, 4) == 0;
+
+    const bool scaffoldNetwork =
+        std::memcmp(data, YSF_SCAFFOLD_MAGIC, 4) == 0;
+
+    if (!synthetic && !scaffoldNetwork)
+        return false;
 
     frame.protocol =
         MediaProtocol::YSF;
@@ -113,37 +121,42 @@ bool YSFProtocol::parseSyntheticBridge(
 
     if (synthetic) {
 
-        uint16_t payloadLength =
+        const uint16_t payloadLength =
             (data[12] << 8) |
              data[13];
 
-        if (length >= 15 + payloadLength) {
+        if (length < 15 + payloadLength)
+            return false;
 
-            frame.payload.assign(
-                data + 15,
-                data + 15 + payloadLength);
-        }
+        frame.payload.assign(
+            data + 15,
+            data + 15 + payloadLength);
     }
     else {
 
-        return YSFNetworkFrame::parse(
-            data,
-            length,
-            frame);
+        if (!YSFNetworkFrame::parse(
+                data,
+                length,
+                frame))
+        {
+            return false;
+        }
     }
 
     frame.sourcePeer =
         peer;
 
     Logger::log(INFO,
-        std::string("YSF parsed: MODE=") +
-        (synthetic ? "synthetic" : "network") +
+        std::string("YSF parsed project bridge frame:")
+        + " MODE=" +
+        (synthetic ? "YSFB-synthetic" : "YSFD-scaffold-network") +
         " STREAMID=" +
         std::to_string(frame.streamId) +
         " SEQ=" +
         std::to_string(frame.sequence) +
         " PAYLOAD=" +
-        std::to_string(frame.payload.size()));
+        std::to_string(frame.payload.size()) +
+        " REAL_YSF=0");
 
     return true;
 }
