@@ -1670,3 +1670,139 @@ The project has successfully transitioned
 from hardware bring-up into protocol
 implementation.
 
+
+-------------------------------------------------------------------------------
+UPDATE — 2026-05-29 YSF VOICE PAYLOAD LAYER
+-------------------------------------------------------------------------------
+
+Latest Confirmed Commit:
+37fa798 — Add structured YSF voice payload layer
+
+Implemented:
+
+- Structured YSFVoiceFrame payload builder
+- Deterministic YSF voice slot layout
+- AMBE payload placement layer
+- Voice slot metadata
+- End-of-transmission slot marking
+
+Previous Behavior
+-----------------
+
+YSFVoiceFrame simply:
+
+- allocated 120 bytes
+- copied payload bytes
+- padded remainder with zeros
+
+No internal voice frame structure existed.
+
+Current Behavior
+----------------
+
+YSFVoiceFrame now constructs a structured payload consisting of:
+
+- Voice slots
+- Slot identifiers
+- Sequence tracking
+- EOT tracking
+- AMBE payload placement
+
+Current slot structure:
+
+byte 0:
+- slot type
+
+byte 1:
+- sequence
+
+byte 2:
+- slot index
+
+byte 3:
+- flags
+
+byte 4-12:
+- AMBE payload
+
+byte 13-17:
+- reserved
+
+Verification
+------------
+
+Runtime verified:
+
+YSFVoiceFrame build:
+- AMBE payload copied
+- Voice slots generated
+- Structured payload produced
+
+Observed:
+
+STREAMID=4660
+AMBE_BYTES_COPIED=34
+VOICE_SLOTS_USED=4
+YSF_PAYLOAD=120
+
+Significance
+------------
+
+This is the first protocol-specific voice payload construction layer beyond simple byte copying.
+
+The project now contains:
+
+- D-Star network parsing
+- PCM audio domain
+- ThumbDV transcoding
+- Structured YSF voice payload generation
+
+Verified Runtime Path
+---------------------
+
+DMR Frame
+    ↓
+DMR Parser
+    ↓
+MediaFrame
+    ↓
+CodecRouter
+    ↓
+ThumbDV Decode
+    ↓
+PCMFrame
+    ↓
+AudioLevelManager
+    ↓
+ThumbDV Encode
+    ↓
+ProtocolCodecMapper
+    ↓
+YSFVoiceFrame
+    ↓
+YSFNetworkFrame
+    ↓
+YSF Packet
+
+Next Development Area
+---------------------
+
+YSFFich implementation.
+
+Future work:
+
+- Real FI field handling
+- Real DT field handling
+- Real call-mode fields
+- Real frame numbering fields
+- CRC generation
+- Full YSF FICH encoding
+
+Project Status
+--------------
+
+Protocol construction work is now underway.
+
+Estimated Overall Completion:
+~78%
+
