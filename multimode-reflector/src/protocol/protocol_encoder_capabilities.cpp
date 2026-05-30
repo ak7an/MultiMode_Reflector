@@ -7,6 +7,7 @@ bool ProtocolEncoderCapabilities::canEncode(
 
     case MediaProtocol::DSTAR:
     case MediaProtocol::YSF:
+    case MediaProtocol::DMR:
         return true;
 
     default:
