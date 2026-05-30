@@ -1,5 +1,5 @@
 #include "ysf_protocol.h"
-#include "ysf_network_frame.h"
+#include "ysf_scaffold_frame.h"
 
 #include "../core/logger.h"
 #include "../core/media_router.h"
@@ -134,7 +134,7 @@ bool YSFProtocol::parseProjectBridgeFrame(
     }
     else {
 
-        if (!YSFNetworkFrame::parse(
+        if (!YSFScaffoldFrame::parse(
                 data,
                 length,
                 frame))

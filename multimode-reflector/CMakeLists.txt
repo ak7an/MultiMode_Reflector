@@ -55,7 +55,7 @@ add_executable(reflector
     src/core/audio_level_manager.cpp
     src/core/protocol_codec_mapper.cpp
     src/protocol/ysf_encoder.cpp
-    src/protocol/ysf_network_frame.cpp
+    src/protocol/ysf_scaffold_frame.cpp
     src/protocol/ysf_voice_frame.cpp
     src/protocol/ysf_fich.cpp
     src/protocol/ysf_frame_mapper.cpp

@@ -1,32 +1,43 @@
-#include "ysf_network_frame.h"
+#include "ysf_scaffold_frame.h"
+
 #include "ysf_fich.h"
 #include "ysf_frame_mapper.h"
 #include "ysf_voice_frame.h"
 
 #include <algorithm>
 #include <cstring>
+#include <string>
 
-static std::string padded(
-    const std::string& s,
-    size_t len)
+namespace
 {
-    std::string out = s;
+    constexpr const char* YSF_SCAFFOLD_MAGIC = "YSFD";
+    constexpr size_t YSF_SCAFFOLD_PACKET_SIZE = 155;
+    constexpr size_t YSF_SCAFFOLD_HEADER_SIZE = 35;
+    constexpr size_t YSF_SCAFFOLD_FICH_OFFSET = 29;
+    constexpr size_t YSF_SCAFFOLD_PAYLOAD_OFFSET = 35;
 
-    if (out.size() > len)
-        out.resize(len);
+    std::string padded(
+        const std::string& s,
+        size_t len)
+    {
+        std::string out = s;
 
-    while (out.size() < len)
-        out += ' ';
+        if (out.size() > len)
+            out.resize(len);
 
-    return out;
+        while (out.size() < len)
+            out += ' ';
+
+        return out;
+    }
 }
 
 std::vector<uint8_t>
-YSFNetworkFrame::build(
+YSFScaffoldFrame::build(
     const MediaFrame& frame)
 {
     std::vector<uint8_t> packet(
-        155,
+        YSF_SCAFFOLD_PACKET_SIZE,
         0);
 
     packet[0] = 'Y';
@@ -80,11 +91,9 @@ YSFNetworkFrame::build(
             frame);
 
     std::memcpy(
-        &packet[29],
+        &packet[YSF_SCAFFOLD_FICH_OFFSET],
         fich.data(),
         fich.size());
-
-    const size_t payloadOffset = 35;
 
     std::vector<uint8_t> voicePayload =
         YSFVoiceFrame::build(
@@ -93,28 +102,29 @@ YSFNetworkFrame::build(
     const size_t copyLength =
         std::min(
             voicePayload.size(),
-            packet.size() - payloadOffset);
+            packet.size() - YSF_SCAFFOLD_PAYLOAD_OFFSET);
 
     std::memcpy(
-        &packet[payloadOffset],
+        &packet[YSF_SCAFFOLD_PAYLOAD_OFFSET],
         voicePayload.data(),
         copyLength);
 
     return packet;
 }
 
-bool YSFNetworkFrame::parse(
+bool YSFScaffoldFrame::parse(
     const uint8_t* data,
     size_t length,
     MediaFrame& frame)
 {
-    if (length < 35) {
+    if (data == nullptr)
         return false;
-    }
 
-    if (std::memcmp(data, "YSFD", 4) != 0) {
+    if (length < YSF_SCAFFOLD_HEADER_SIZE)
         return false;
-    }
+
+    if (std::memcmp(data, YSF_SCAFFOLD_MAGIC, 4) != 0)
+        return false;
 
     frame.protocol =
         MediaProtocol::YSF;
@@ -130,7 +140,7 @@ bool YSFNetworkFrame::parse(
         data[7] != 0;
 
     YSFFich::parse(
-        &data[29],
+        &data[YSF_SCAFFOLD_FICH_OFFSET],
         6,
         frame);
 
@@ -146,7 +156,7 @@ bool YSFNetworkFrame::parse(
             10);
 
     return YSFVoiceFrame::parse(
-        data + 35,
-        length - 35,
+        data + YSF_SCAFFOLD_PAYLOAD_OFFSET,
+        length - YSF_SCAFFOLD_PAYLOAD_OFFSET,
         frame);
 }

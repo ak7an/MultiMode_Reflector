@@ -1,6 +1,6 @@
 #include "ysf_encoder.h"
 
-#include "ysf_network_frame.h"
+#include "ysf_scaffold_frame.h"
 #include "../core/logger.h"
 
 #include <sstream>
@@ -118,7 +118,7 @@ std::vector<uint8_t> YSFEncoder::encodeNetwork(
     const MediaFrame& frame)
 {
     std::vector<uint8_t> packet =
-        YSFNetworkFrame::build(
+        YSFScaffoldFrame::build(
             frame);
 
     Logger::log(INFO,
